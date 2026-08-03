@@ -1,0 +1,6 @@
+{
+  "name": "MosesTech Fix AI",
+  "description": "AI-powered IT diagnostic assistant & local technician helpdesk for Uganda. Diagnoses PC, phone, printer and Wi-Fi issues with screenshot analysis, step-by-step guided troubleshooting, safety checks, and local repair bookings.",
+  "requestFramePermissions": ["microphone", "camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
