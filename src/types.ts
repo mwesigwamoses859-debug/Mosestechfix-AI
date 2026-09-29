@@ -102,6 +102,9 @@ export interface BusinessProfile {
   ownerName: string;
   activeRole: UserRole;
   efrisRegistered?: boolean;
+  bankName?: string;
+  bankAccountName?: string;
+  bankAccountNumber?: string;
 }
 
 export interface Customer {

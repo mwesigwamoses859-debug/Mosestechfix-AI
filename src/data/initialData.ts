@@ -14,9 +14,9 @@ import {
 export const INITIAL_BUSINESS_PROFILE: BusinessProfile = {
   name: 'MosesTech Fix AI — IT Diagnostics & Repair Center',
   logoUrl: 'https://images.unsplash.com/photo-1588702547919-26089e690ecc?w=150&auto=format&fit=crop&q=80',
-  phone: '0708262179 / 0789218570',
-  whatsapp: '0708262179',
-  secondaryWhatsapp: '0789218570',
+  phone: '0789218570 / 0708262179',
+  whatsapp: '0789218570',
+  secondaryWhatsapp: '0708262179',
   website: 'https://mosestechfixsolution.com',
   email: 'support@mosestechfixsolution.com',
   address: 'Shop G-12, Ntinda Shopping Centre, Ntinda - Nakawa, Kampala, Uganda',
@@ -26,6 +26,9 @@ export const INITIAL_BUSINESS_PROFILE: BusinessProfile = {
   ownerName: 'Moses Mwesigwa',
   activeRole: 'Technician',
   efrisRegistered: false,
+  bankName: 'dfcu Bank Uganda',
+  bankAccountName: 'Mwesigwa Moses',
+  bankAccountNumber: '01360017235808',
 };
 
 export const INITIAL_CASE_TICKETS: CaseTicket[] = [

@@ -167,7 +167,11 @@ export function generateDocumentPDF(doc: BusinessDocument, profile: BusinessProf
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(8.5);
   y += 4.5;
-  pdf.text(`• Mobile Money (MTN / Airtel): ${profile.phone} (${profile.name})`, 14, y);
+  pdf.text('• Primary MTN Mobile Money: 0789218570 (Mwesigwa Moses)', 14, y);
+  y += 4;
+  pdf.text('• Airtel Money: 0708262179', 14, y);
+  y += 4;
+  pdf.text('• Bank Transfer: dfcu Bank Uganda | Account: 01360017235808 (Mwesigwa Moses)', 14, y);
   y += 4;
   if (doc.paymentTerms) {
     pdf.text(`• Payment Terms: ${doc.paymentTerms}`, 14, y);
@@ -233,7 +237,9 @@ ${totalsBreakdown}
 ${docUrl}
 
 💳 *PAYMENT & SERVICE CONTACTS:*
-• Mobile Money (Airtel / MTN): ${profile.phone} (${profile.name})
+• Primary MTN Mobile Money: 0789218570 (Mwesigwa Moses)
+• Secondary Airtel Money: 0708262179
+• Bank Transfer: dfcu Bank Uganda | Account: 01360017235808 (Mwesigwa Moses)
 • Official Website: ${profile.website || 'https://mosestechfixsolution.com'}
 ${doc.paymentTerms ? `• ${doc.paymentTerms}` : ''}
 

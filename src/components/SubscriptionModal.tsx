@@ -404,20 +404,30 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, on
 
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2.5 text-sm">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1.5 border-b border-slate-800 gap-1">
-                <span className="text-slate-400 text-xs">Account Name:</span>
-                <span className="font-bold text-white">Moses Mwesigwa / MosesTech Fix Solution</span>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1.5 border-b border-slate-800 gap-1">
                 <span className="text-slate-400 text-xs">Bank Name:</span>
-                <span className="font-bold text-emerald-400">Centenary Bank / Stanbic Bank Uganda</span>
+                <span className="font-bold text-emerald-400">dfcu Bank Uganda</span>
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1.5 border-b border-slate-800 gap-1">
-                <span className="text-slate-400 text-xs">Official WhatsApp Line:</span>
+                <span className="text-slate-400 text-xs">Account Name:</span>
+                <span className="font-bold text-white">Mwesigwa Moses</span>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1.5 border-b border-slate-800 gap-1">
+                <span className="text-slate-400 text-xs">Account Number:</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-base font-extrabold text-amber-400 tracking-wider">01360017235808</span>
+                  <button onClick={() => copyText('01360017235808', 'account_no')} className="text-xs text-emerald-400 flex items-center gap-1 font-bold bg-slate-800 px-2 py-1 rounded hover:bg-slate-700">
+                    <Copy className="w-3.5 h-3.5" />
+                    {copied === 'account_no' ? 'Copied Account No!' : 'Copy'}
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1.5 border-b border-slate-800 gap-1">
+                <span className="text-slate-400 text-xs">Official Verification WhatsApp:</span>
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-bold text-white tracking-wider">0789218570</span>
                   <button onClick={() => copyText('0789218570', 'bank_contact')} className="text-xs text-emerald-400 flex items-center gap-1 font-bold">
                     <Copy className="w-3.5 h-3.5" />
-                    {copied === 'bank_contact' ? 'Copied 0789218570' : 'Copy'}
+                    {copied === 'bank_contact' ? 'Copied' : 'Copy'}
                   </button>
                 </div>
               </div>
@@ -430,20 +440,20 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, on
             <div className="p-3.5 rounded-xl bg-blue-950/40 border border-blue-500/30 text-xs text-slate-300 flex items-start gap-2.5">
               <ShieldCheck className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
               <div>
-                <strong>How to complete bank payment:</strong> Make your deposit/EFT transfer through your bank app or branch. Once completed, take a screenshot or photo of your deposit slip and send it to WhatsApp at <strong className="text-emerald-400">0789218570</strong> for immediate activation and receipting.
+                <strong>How to complete bank payment:</strong> Make your deposit or EFT/RTGS transfer to <strong>dfcu Bank Account 01360017235808 (Mwesigwa Moses)</strong>. Once completed, take a photo or screenshot of your deposit slip and send it to WhatsApp at <strong className="text-emerald-400">0789218570</strong> for immediate account activation and official invoice receipting.
               </div>
             </div>
 
             <button
               type="button"
               onClick={() => {
-                const text = 'Hello MosesTech Fix AI, I would like to pay for my IT Diagnostic / Service plan via Bank Transfer. Please provide your official bank account details.';
+                const text = 'Hello MosesTech Fix AI, I have made a bank deposit/transfer to dfcu Bank Account 01360017235808 (Mwesigwa Moses). Here are my payment details and deposit slip for verification.';
                 window.open(`https://wa.me/256789218570?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
               }}
               className="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-xl flex items-center gap-2 transition"
             >
               <MessageCircle className="w-4 h-4" />
-              Request Official Bank Details on WhatsApp (0789218570)
+              Send Bank Deposit Slip on WhatsApp (0789218570)
             </button>
           </div>
         )}
