@@ -1,0 +1,17 @@
+{
+  "short_name": "MosesTech AI",
+  "name": "MosesTech Fix AI — IT Diagnostics & Repair Helpdesk",
+  "description": "Smart AI-powered IT Diagnostics and Computer Repair platform by MosesTech Fix Solution",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#020617",
+  "theme_color": "#059669",
+  "display": "standalone",
+  "orientation": "portrait"
+}

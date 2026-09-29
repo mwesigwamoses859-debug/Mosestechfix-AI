@@ -256,10 +256,13 @@ export interface SubscriptionPlan {
   id: string;
   name: string;
   monthlyUGX: number;
+  priceUSD?: number;
+  currency?: string;
   periodText?: string;
   aiRequestLimit: number | string;
   features: string[];
   isPopular?: boolean;
   badge?: string;
 }
+
 
