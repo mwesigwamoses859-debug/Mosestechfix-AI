@@ -16,6 +16,7 @@ import {
   Volume2,
   VolumeX,
   Laptop,
+  Monitor,
   Printer,
   Wifi,
   Smartphone,
@@ -30,6 +31,11 @@ import {
   BookOpen,
   ChevronRight,
   Lock,
+  Flame,
+  CheckCircle2,
+  Camera,
+  Activity,
+  Sliders,
 } from 'lucide-react';
 
 interface FixAITroubleshooterProps {
@@ -81,6 +87,16 @@ export function matchKnowledgeBaseSolution(userText: string, category?: DeviceCa
     return (categoryMatches && keywordMatches) || keywordMatches || titleMatches;
   });
 }
+
+// Hardware category definitions with rich icons and descriptors
+const HARDWARE_CATEGORIES: { id: DeviceCategory; label: string; sub: string; icon: React.FC<{ className?: string }> }[] = [
+  { id: 'Windows Laptop', label: 'Laptop', sub: 'HP, Dell, Lenovo', icon: Laptop },
+  { id: 'Desktop PC', label: 'Desktop PC', sub: 'Towers & All-in-Ones', icon: Monitor },
+  { id: 'Printer & Scanner', label: 'Printer / Scan', sub: 'Epson, Canon, HP', icon: Printer },
+  { id: 'Wi-Fi & Router', label: 'Wi-Fi / MiFi', sub: 'TP-Link, Airtel, MTN', icon: Wifi },
+  { id: 'Android Phone', label: 'Phone / Tablet', sub: 'Samsung, Tecno, iOS', icon: Smartphone },
+  { id: 'CCTV & Security', label: 'CCTV & Sec', sub: 'DVRs & IP Cameras', icon: Shield },
+];
 
 export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
   profile,
@@ -429,33 +445,38 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
     window.open(`https://wa.me/${selectedWaPhone}?text=${waText}`, '_blank');
   };
 
+  // Determine current active safety level for the Safety Gauge Meter
+  const lastAssistantMsg = [...messages].reverse().find((m) => m.sender === 'assistant');
+  const activeSafetyLevel: SafetyLevel = lastAssistantMsg?.safetyLevel || (input ? analyzeSafetyLevel(input) : 'Green');
+
   const QUICK_SYMPTOMS = [
     { label: 'HP Laptop Amber Light Blinking', category: 'Windows Laptop', brand: 'HP', prompt: 'My HP laptop is blinking orange/white light when plugged in and the screen stays black.' },
     { label: 'Blue Screen CRITICAL_PROCESS_DIED', category: 'Windows Laptop', brand: 'Dell', prompt: 'My computer crashed with a blue screen error CRITICAL_PROCESS_DIED and keeps rebooting.' },
-    { label: 'No Display but Fan Spinning', category: 'Desktop PC', brand: 'Dell', prompt: 'Desktop tower turns on and fan spins loud, but nothing shows on the monitor.' },
-    { label: 'Printer Spooler Error / Offline', category: 'Printer & Scanner', brand: 'Epson', prompt: 'Epson printer says Print Spooler service stopped and prints nothing.' },
+    { label: 'No Display but Fan Spinning Loud', category: 'Desktop PC', brand: 'Dell', prompt: 'Desktop tower turns on and fan spins loud, but nothing shows on the monitor.' },
+    { label: 'Epson Spooler / Paper Jam Blink', category: 'Printer & Scanner', brand: 'Epson', prompt: 'Epson printer says Print Spooler service stopped and prints nothing.' },
     { label: 'Wi-Fi Connected No Internet', category: 'Wi-Fi & Router', brand: 'TP-Link', prompt: 'Wi-Fi shows yellow triangle exclamation mark: Connected but no internet access.' },
     { label: 'Swollen Battery / Extremely Hot', category: 'Windows Laptop', brand: 'Lenovo', prompt: 'My laptop battery casing is swollen pushing up the touchpad and smells hot.' },
   ];
 
   return (
     <div className="max-w-6xl mx-auto space-y-4">
-      {/* Top Banner & Device Category Selector */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-4">
+      {/* Top Banner & Command Center Controls */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm transition-colors">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800/80 pb-4 mb-4">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 flex items-center justify-center text-white shadow-md">
-              <Wrench className="w-6 h-6" />
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+              <Wrench className="w-6 h-6 text-slate-950" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="text-lg font-bold text-slate-900 tracking-tight">MosesTech Fix AI Engine</h1>
-                <span className="bg-emerald-50 text-emerald-800 border border-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  Guided Diagnostic
+                <h1 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">MosesTech Fix AI Engine</h1>
+                <span className="bg-emerald-50 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Guided Diagnostics
                 </span>
               </div>
-              <p className="text-xs text-slate-500">
-                1-Step Diagnostic Assistant for Windows Laptops, Desktops, Printers, Wi-Fi & Phones in Uganda
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                1-Step Diagnostic Assistant for Laptops, Desktops, Printers, Wi-Fi & Phones in Uganda
               </p>
             </div>
           </div>
@@ -475,20 +496,20 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
               href="https://wa.me/256708262179"
               target="_blank"
               rel="noreferrer"
-              className="bg-slate-100 hover:bg-slate-200 text-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-200 flex items-center gap-1 font-semibold transition-colors"
+              className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-1 font-semibold transition-colors"
               title="Chat Airtel WhatsApp 0708262179"
             >
-              <PhoneCall className="w-3.5 h-3.5 text-emerald-600" />
+              <PhoneCall className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span>0708262179</span>
             </a>
             <a
               href="https://wa.me/256789218570"
               target="_blank"
               rel="noreferrer"
-              className="bg-slate-100 hover:bg-slate-200 text-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-200 flex items-center gap-1 font-semibold transition-colors"
+              className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-1 font-semibold transition-colors"
               title="Chat MTN WhatsApp 0789218570"
             >
-              <PhoneCall className="w-3.5 h-3.5 text-yellow-600" />
+              <PhoneCall className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-400" />
               <span>0789218570</span>
             </a>
           </div>
@@ -500,7 +521,7 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
           return (
             <div className={`mb-4 p-3.5 text-white rounded-xl border flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm ${
               access.isLocked
-                ? 'bg-gradient-to-r from-red-950 via-slate-900 to-rose-950 border-red-500'
+                ? 'bg-gradient-to-r from-red-950 via-slate-900 to-rose-950 border-red-500/80'
                 : 'bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-900 border-emerald-500/50'
             }`}>
               <div className="flex items-center space-x-3">
@@ -508,7 +529,7 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
-                      access.isLocked ? 'bg-red-500 text-white' : 'bg-emerald-400 text-slate-950'
+                      access.isLocked ? 'bg-red-500 text-white' : 'bg-emerald-400 text-slate-950 font-bold'
                     }`}>
                       {access.isLocked ? 'System Locked' : '3-Day Free Trial'}
                     </span>
@@ -522,8 +543,8 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
                   </div>
                   <p className="text-xs text-slate-200 font-medium mt-0.5">
                     {access.isLocked
-                      ? 'Your 3-day free trial has expired. Subscribe to 10,000 UGX/week or 20,000 UGX/month to unlock AI diagnostics.'
-                      : 'Every device gets 3 days of free unlimited AI troubleshooting! Continue with 10,000 UGX/week or 20,000 UGX/month.'}
+                      ? 'Your 3-day free trial has expired. Subscribe to 10,000 UGX/week, 20,000 UGX/month, or $5 USD Card/Google Pay to unlock AI diagnostics.'
+                      : 'Every device gets 3 days of free unlimited AI troubleshooting! Continue with 10,000 UGX/week, 20,000 UGX/month, or $5 USD Card.'}
                   </p>
                 </div>
               </div>
@@ -536,85 +557,186 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
                     : 'bg-emerald-400 hover:bg-emerald-300 text-slate-950'
                 }`}
               >
-                <span>{access.isLocked ? 'Pay / Enter Code to Unlock' : 'View Access Plans'}</span>
+                <span>{access.isLocked ? 'Pay / Enter Code to Unlock' : 'View Access Plans ($5 / UGX)'}</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           );
         })()}
 
-        {/* Device Selectors */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-[11px] font-bold text-slate-600 mb-1 uppercase tracking-wider">
-              1. Device Category
+        {/* 1. Interactive Visual Hardware Category Console */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Sliders className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Select Hardware Target</span>
             </label>
-            <select
-              value={selectedDevice}
-              onChange={(e) => setSelectedDevice(e.target.value as DeviceCategory)}
-              className="w-full bg-slate-50 text-slate-900 text-xs font-medium rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-              <option value="Windows Laptop">💻 Windows Laptop</option>
-              <option value="Desktop PC">🖥️ Desktop PC</option>
-              <option value="Printer & Scanner">🖨️ Printer & Scanner</option>
-              <option value="Wi-Fi & Router">📶 Wi-Fi & Router / MiFi</option>
-              <option value="Android Phone">📱 Android Phone</option>
-              <option value="CCTV & Security">📹 CCTV & Security System</option>
-            </select>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Click a device type below</span>
           </div>
 
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            {HARDWARE_CATEGORIES.map((cat) => {
+              const IconComp = cat.icon;
+              const isSelected = selectedDevice === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedDevice(cat.id)}
+                  className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between group ${
+                    isSelected
+                      ? 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-500 text-emerald-900 dark:text-emerald-300 ring-2 ring-emerald-500/40 shadow-sm'
+                      : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-100/60 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                      isSelected
+                        ? 'bg-emerald-500 text-slate-950 font-bold'
+                        : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 group-hover:text-emerald-500'
+                    }`}>
+                      <IconComp className="w-4 h-4" />
+                    </div>
+                    {isSelected && (
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-400/50"></span>
+                    )}
+                  </div>
+                  <div>
+                    <span className="font-bold text-xs block leading-tight">{cat.label}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate block mt-0.5">{cat.sub}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Brand & Model Customization Sub-Bar */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-slate-100 dark:border-slate-800/80">
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 mb-1 uppercase tracking-wider">
-              2. Manufacturer / Brand
+            <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wider">
+              Manufacturer / Brand
             </label>
             <select
               value={selectedBrand}
               onChange={(e) => setSelectedBrand(e.target.value as Manufacturer)}
-              className="w-full bg-slate-50 text-slate-900 text-xs font-medium rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs font-medium rounded-xl border border-slate-200 dark:border-slate-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option value="HP">HP (Hewlett-Packard)</option>
-              <option value="Dell">Dell (Latitude / OptiPlex)</option>
+              <option value="Dell">Dell (Latitude / OptiPlex / Inspiron)</option>
               <option value="Lenovo">Lenovo (ThinkPad / IdeaPad)</option>
-              <option value="Asus">Asus</option>
-              <option value="Acer">Acer</option>
-              <option value="Apple">Apple Mac / iPad</option>
-              <option value="Samsung">Samsung</option>
-              <option value="Epson">Epson (EcoTank / InkJet)</option>
-              <option value="Canon">Canon</option>
+              <option value="Asus">Asus (ZenBook / ROG)</option>
+              <option value="Acer">Acer (Aspire / Nitro)</option>
+              <option value="Apple">Apple Mac / MacBook / iPad</option>
+              <option value="Samsung">Samsung Galaxy / Displays</option>
+              <option value="Epson">Epson (EcoTank / WorkForce)</option>
+              <option value="Canon">Canon (PIXMA / ImageRUNNER)</option>
               <option value="TP-Link">TP-Link Router / MiFi</option>
               <option value="Generic / Other">Generic / Other Brand</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 mb-1 uppercase tracking-wider">
-              3. Device Model (Optional)
+            <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wider">
+              Device Model (Optional)
             </label>
             <input
               type="text"
-              placeholder="e.g. EliteBook 840 G3 / L3150"
+              placeholder="e.g. EliteBook 840 G5 / L3150 / Archer C6"
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
-              className="w-full bg-slate-50 text-slate-900 text-xs font-medium rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-slate-400"
+              className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs font-medium rounded-xl border border-slate-200 dark:border-slate-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-slate-400 dark:placeholder-slate-500"
             />
           </div>
         </div>
 
-        {/* Quick Symptoms Chips */}
-        <div className="mt-3 pt-3 border-t border-slate-100">
-          <p className="text-[11px] font-bold text-slate-600 mb-2">Common Problem Presets (Click to diagnose):</p>
+        {/* 2. Visual Safety Gauge Meter Display */}
+        <div className="mt-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+            <div className="flex items-center space-x-2">
+              <Activity className="w-4 h-4 text-emerald-500" />
+              <span className="text-xs font-bold text-slate-900 dark:text-white">
+                Live Diagnostic Safety Gauge
+              </span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                (Automated Hazard Protection)
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                activeSafetyLevel === 'Green'
+                  ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-600'
+                  : activeSafetyLevel === 'Amber'
+                  ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-600'
+                  : 'bg-red-100 dark:bg-red-950/80 text-red-800 dark:text-red-300 border border-red-300 dark:border-red-600 animate-pulse'
+              }`}>
+                {activeSafetyLevel === 'Green' && <CheckCircle className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />}
+                {activeSafetyLevel === 'Amber' && <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400" />}
+                {activeSafetyLevel === 'Red' && <AlertTriangle className="w-3 h-3 text-red-600 dark:text-red-400" />}
+                Status: {activeSafetyLevel} Level
+              </span>
+            </div>
+          </div>
+
+          {/* Segmented Meter Bar */}
+          <div className="grid grid-cols-3 gap-1.5 h-2 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700 p-0.5">
+            <div
+              className={`rounded-full transition-all duration-300 ${
+                activeSafetyLevel === 'Green' || activeSafetyLevel === 'Amber' || activeSafetyLevel === 'Red'
+                  ? 'bg-emerald-500 shadow-sm shadow-emerald-500/50'
+                  : 'bg-slate-300 dark:bg-slate-600 opacity-30'
+              }`}
+              title="Green Level: Safe for User DIY"
+            />
+            <div
+              className={`rounded-full transition-all duration-300 ${
+                activeSafetyLevel === 'Amber' || activeSafetyLevel === 'Red'
+                  ? 'bg-amber-500 shadow-sm shadow-amber-500/50'
+                  : 'bg-slate-300 dark:bg-slate-600 opacity-30'
+              }`}
+              title="Amber Level: Caution / Risk of Data Loss"
+            />
+            <div
+              className={`rounded-full transition-all duration-300 ${
+                activeSafetyLevel === 'Red'
+                  ? 'bg-red-500 animate-pulse shadow-sm shadow-red-500/50'
+                  : 'bg-slate-300 dark:bg-slate-600 opacity-30'
+              }`}
+              title="Red Level: Critical Hazard / Stop Hardware"
+            />
+          </div>
+
+          <div className="flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 mt-1.5 font-medium px-0.5">
+            <span className={activeSafetyLevel === 'Green' ? 'text-emerald-600 dark:text-emerald-400 font-bold' : ''}>
+              🟢 Level 1: Safe DIY
+            </span>
+            <span className={activeSafetyLevel === 'Amber' ? 'text-amber-600 dark:text-amber-400 font-bold' : ''}>
+              🟡 Level 2: Caution (Backup Data)
+            </span>
+            <span className={activeSafetyLevel === 'Red' ? 'text-red-600 dark:text-red-400 font-bold' : ''}>
+              🔴 Level 3: Critical Hazard (Stop)
+            </span>
+          </div>
+        </div>
+
+        {/* Quick Symptoms Presets Chips */}
+        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+          <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-2">
+            Common Problem Presets (Click to diagnose):
+          </p>
           <div className="flex flex-wrap gap-2">
             {QUICK_SYMPTOMS.map((item, idx) => (
               <button
                 key={idx}
+                type="button"
                 onClick={() => {
                   setSelectedDevice(item.category as DeviceCategory);
                   setSelectedBrand(item.brand as Manufacturer);
                   handleSend(item.prompt);
                 }}
-                className="bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 transition-colors text-left flex items-center space-x-1.5 shadow-2xs"
+                className="bg-slate-50 dark:bg-slate-800/80 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:border-emerald-300 dark:hover:border-emerald-600 text-slate-700 dark:text-slate-300 hover:text-emerald-800 dark:hover:text-emerald-300 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors text-left flex items-center space-x-1.5 shadow-2xs"
               >
-                <Sparkles className="w-3 h-3 text-emerald-600 flex-shrink-0" />
+                <Sparkles className="w-3 h-3 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                 <span>{item.label}</span>
               </button>
             ))}
@@ -623,16 +745,16 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
       </div>
 
       {/* Main Chat Interface */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col h-[560px]">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm flex flex-col h-[580px] transition-colors">
         {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/60 dark:bg-slate-950/70">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-700">
+              <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-500/30 flex items-center justify-center text-emerald-700 dark:text-emerald-400">
                 <Bot className="w-8 h-8 animate-pulse" />
               </div>
-              <h3 className="text-base font-bold text-slate-900">Welcome to MosesTech Fix AI</h3>
-              <p className="text-xs text-slate-600 max-w-md leading-relaxed">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Welcome to MosesTech Fix AI</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md leading-relaxed">
                 Describe your tech issue in plain English or Luganda, upload a screenshot or photo of an error code, and get guided 1-step safe troubleshooting or technician booking.
               </p>
             </div>
@@ -643,24 +765,24 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
                 className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
               >
                 <div className="flex items-center space-x-2 mb-1">
-                  <span className="text-[10px] text-slate-500 font-medium">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
                     {msg.sender === 'user' ? 'You' : 'MosesTech Fix AI'}
                   </span>
-                  <span className="text-[10px] text-slate-400">{msg.timestamp}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500">{msg.timestamp}</span>
 
                   {msg.safetyLevel && (
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
                         msg.safetyLevel === 'Green'
-                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                          ? 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-600'
                           : msg.safetyLevel === 'Amber'
-                          ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                          : 'bg-red-100 text-red-800 border border-red-300 animate-pulse'
+                          ? 'bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-600'
+                          : 'bg-red-100 dark:bg-red-950/70 text-red-800 dark:text-red-300 border border-red-300 dark:border-red-600 animate-pulse'
                       }`}
                     >
                       {msg.safetyLevel === 'Green' && <CheckCircle className="w-2.5 h-2.5" />}
                       {msg.safetyLevel === 'Amber' && <AlertTriangle className="w-2.5 h-2.5" />}
-                      {msg.safetyLevel === 'Red' && <AlertTriangle className="w-2.5 h-2.5 text-red-600" />}
+                      {msg.safetyLevel === 'Red' && <AlertTriangle className="w-2.5 h-2.5 text-red-600 dark:text-red-400" />}
                       {msg.safetyLevel} Safety
                     </span>
                   )}
@@ -670,7 +792,7 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
                   className={`max-w-2xl rounded-2xl px-4 py-3 text-xs leading-relaxed space-y-2 shadow-sm ${
                     msg.sender === 'user'
                       ? 'bg-emerald-600 text-white rounded-tr-none font-medium'
-                      : 'bg-white text-slate-800 border border-slate-200 rounded-tl-none'
+                      : 'bg-white dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700/80 rounded-tl-none'
                   }`}
                 >
                   {/* Uploaded Image Preview */}
@@ -679,7 +801,7 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
                       <img
                         src={msg.imageUrl}
                         alt="Uploaded diagnostic snippet"
-                        className="max-h-48 rounded-xl border border-slate-200 object-cover"
+                        className="max-h-48 rounded-xl border border-slate-200 dark:border-slate-700 object-cover"
                       />
                     </div>
                   )}
@@ -689,12 +811,12 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
 
                   {/* Safety Warning Box for Amber/Red */}
                   {msg.safetyLevel === 'Red' && (
-                    <div className="mt-2 bg-red-50 border border-red-200 text-red-900 p-2.5 rounded-xl text-xs space-y-1">
-                      <div className="flex items-center space-x-1.5 font-bold text-red-700">
-                        <AlertTriangle className="w-4 h-4 text-red-700" />
+                    <div className="mt-2 bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800 text-red-900 dark:text-red-200 p-2.5 rounded-xl text-xs space-y-1">
+                      <div className="flex items-center space-x-1.5 font-bold text-red-700 dark:text-red-300">
+                        <AlertTriangle className="w-4 h-4 text-red-700 dark:text-red-400" />
                         <span>HAZARD ALERT — DO NOT ATTEMPT REPAIR AT HOME</span>
                       </div>
-                      <p className="text-[11px] text-red-800">
+                      <p className="text-[11px] text-red-800 dark:text-red-300">
                         This problem involves potential hardware damage or power risk. Escalate immediately to an IT technician.
                       </p>
                     </div>
@@ -702,35 +824,52 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
 
                   {/* Action Bar for Assistant Message */}
                   {msg.sender === 'assistant' && (
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-[11px]">
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-700/80 flex items-center justify-between gap-2 text-[11px]">
                       <div className="flex items-center space-x-2">
                         <button
+                          type="button"
                           onClick={() => speakText(msg.text, msg.id)}
-                          className="text-slate-500 hover:text-emerald-700 flex items-center space-x-1 font-medium"
+                          className="text-slate-500 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-400 flex items-center space-x-1 font-medium transition-colors"
                           title="Listen to audio read aloud"
                         >
                           {speakingMsgId === msg.id ? (
-                            <VolumeX className="w-3.5 h-3.5 text-emerald-600 animate-bounce" />
+                            <VolumeX className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 animate-bounce" />
                           ) : (
                             <Volume2 className="w-3.5 h-3.5" />
                           )}
-                          <span>Read Aloud</span>
+                          <span>{speakingMsgId === msg.id ? 'Stop Audio' : 'Read Aloud'}</span>
                         </button>
 
+                        {/* 3. Audio Waveform Visualizer Animation during speech */}
+                        {speakingMsgId === msg.id && (
+                          <div className="flex items-center space-x-1 px-2 py-0.5 bg-emerald-500/10 dark:bg-emerald-950/60 rounded-full border border-emerald-500/30">
+                            <span className="w-1 h-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                            <span className="w-1 h-3.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                            <span className="w-1 h-2.5 bg-emerald-500 rounded-full animate-bounce"></span>
+                            <span className="w-1 h-4 bg-teal-400 rounded-full animate-bounce [animation-delay:-0.25s]"></span>
+                            <span className="w-1 h-1.5 bg-emerald-500 rounded-full animate-bounce [animation-delay:-0.1s]"></span>
+                            <span className="text-[9px] font-mono text-emerald-600 dark:text-emerald-400 font-bold ml-1">
+                              Voice Active
+                            </span>
+                          </div>
+                        )}
+
                         <button
+                          type="button"
                           onClick={() => {
                             navigator.clipboard.writeText(msg.text);
                             setCopiedId(msg.id);
                             setTimeout(() => setCopiedId(null), 2000);
                           }}
-                          className="text-slate-500 hover:text-emerald-700 flex items-center space-x-1 font-medium"
+                          className="text-slate-500 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-400 flex items-center space-x-1 font-medium transition-colors"
                         >
-                          {copiedId === msg.id ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                          {copiedId === msg.id ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                           <span>{copiedId === msg.id ? 'Copied' : 'Copy'}</span>
                         </button>
                       </div>
 
                       <button
+                        type="button"
                         onClick={() => {
                           setBookingTicketData({
                             symptoms: msg.text.substring(0, 150),
@@ -741,9 +880,9 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
                           });
                           setShowBookingModal(true);
                         }}
-                        className="bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 px-2.5 py-1 rounded-lg font-bold flex items-center space-x-1 transition-colors"
+                        className="bg-blue-50 dark:bg-blue-950/70 hover:bg-blue-100 dark:hover:bg-blue-900/80 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-700/80 px-2.5 py-1 rounded-lg font-bold flex items-center space-x-1 transition-colors"
                       >
-                        <PhoneCall className="w-3 h-3 text-blue-600" />
+                        <PhoneCall className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                         <span>Book Technician</span>
                       </button>
                     </div>
@@ -754,31 +893,35 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
                 {msg.sender === 'assistant' && msg.safetyLevel !== 'Red' && (
                   <div className="flex flex-wrap gap-1.5 mt-2 max-w-2xl">
                     <button
+                      type="button"
                       onClick={() => handleSend('I completed this step. What is the next step?')}
-                      className="bg-white hover:bg-slate-100 text-slate-700 text-[11px] font-medium px-2.5 py-1 rounded-lg border border-slate-200 flex items-center space-x-1 shadow-2xs"
+                      className="bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] font-medium px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center space-x-1 shadow-2xs"
                     >
-                      <CheckCircle className="w-3 h-3 text-emerald-600" />
+                      <CheckCircle className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                       <span>Completed Step</span>
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleSend('It worked! The problem is solved now. Thank you!')}
-                      className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-emerald-200 flex items-center space-x-1 shadow-2xs"
+                      className="bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-300 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800 flex items-center space-x-1 shadow-2xs"
                     >
-                      <Sparkles className="w-3 h-3 text-emerald-600" />
+                      <Sparkles className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                       <span>It Worked!</span>
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleSend('The problem remains. What else should I try?')}
-                      className="bg-amber-50 hover:bg-amber-100 text-amber-800 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-amber-200 flex items-center space-x-1 shadow-2xs"
+                      className="bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900 text-amber-800 dark:text-amber-300 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-800 flex items-center space-x-1 shadow-2xs"
                     >
-                      <AlertTriangle className="w-3 h-3 text-amber-600" />
+                      <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                       <span>Problem Remains</span>
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleSend('I cannot find this setting or cable on my device.')}
-                      className="bg-white hover:bg-slate-100 text-slate-700 text-[11px] font-medium px-2.5 py-1 rounded-lg border border-slate-200 flex items-center space-x-1 shadow-2xs"
+                      className="bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] font-medium px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center space-x-1 shadow-2xs"
                     >
-                      <HelpCircle className="w-3 h-3 text-slate-500" />
+                      <HelpCircle className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                       <span>Cannot Find Setting</span>
                     </button>
                   </div>
@@ -788,8 +931,8 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
           )}
 
           {isLoading && (
-            <div className="flex items-center space-x-2 text-xs text-slate-700 bg-white p-3 rounded-2xl w-fit border border-slate-200 shadow-sm">
-              <Sparkles className="w-4 h-4 text-emerald-600 animate-spin" />
+            <div className="flex items-center space-x-2 text-xs text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 p-3 rounded-2xl w-fit border border-slate-200 dark:border-slate-700 shadow-sm">
+              <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-spin" />
               <span>MosesTech Fix AI is analyzing diagnostic logs & manufacturer manuals...</span>
             </div>
           )}
@@ -798,15 +941,16 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
 
         {/* Uploaded Image Preview Bar before Send */}
         {uploadedImageBase64 && (
-          <div className="px-4 py-2 bg-slate-100 border-t border-slate-200 flex items-center justify-between">
-            <div className="flex items-center space-x-2 text-xs text-slate-700 font-medium">
-              <Upload className="w-4 h-4 text-emerald-600" />
+          <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+            <div className="flex items-center space-x-2 text-xs text-slate-700 dark:text-slate-300 font-medium">
+              <Upload className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>Image attached for photo analysis</span>
-              <img src={uploadedImageBase64} alt="preview" className="w-8 h-8 rounded border border-slate-300 object-cover" />
+              <img src={uploadedImageBase64} alt="preview" className="w-8 h-8 rounded border border-slate-300 dark:border-slate-600 object-cover" />
             </div>
             <button
+              type="button"
               onClick={() => setUploadedImageBase64(null)}
-              className="text-slate-500 hover:text-slate-900"
+              className="text-slate-500 hover:text-slate-900 dark:hover:text-white"
             >
               <X className="w-4 h-4" />
             </button>
@@ -814,7 +958,7 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
         )}
 
         {/* Chat Input Bar */}
-        <div className="p-3 border-t border-slate-200 bg-white rounded-b-2xl">
+        <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-b-2xl">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -833,10 +977,10 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors"
+              className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-colors"
               title="Upload error screenshot or photo"
             >
-              <Upload className="w-4 h-4 text-emerald-600" />
+              <Upload className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </button>
 
             {/* Voice Input Button */}
@@ -845,8 +989,8 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
               onClick={toggleListening}
               className={`p-2.5 rounded-xl border transition-colors ${
                 isListening
-                  ? 'bg-red-100 text-red-600 border-red-300 animate-pulse'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                  ? 'bg-red-100 dark:bg-red-950/70 text-red-600 dark:text-red-400 border-red-300 dark:border-red-700 animate-pulse'
+                  : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
               }`}
               title="Voice dictation"
             >
@@ -859,7 +1003,7 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Describe what is wrong or upload a photo (e.g., 'My HP laptop is blinking orange')..."
-              className="flex-1 bg-slate-50 text-slate-900 text-xs rounded-xl border border-slate-200 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-slate-400 font-medium"
+              className="flex-1 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs rounded-xl border border-slate-200 dark:border-slate-700 px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-slate-400 dark:placeholder-slate-500 font-medium"
             />
 
             {/* Send Button */}
@@ -877,21 +1021,22 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
 
       {/* Technician Booking Modal */}
       {showBookingModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl text-slate-900 dark:text-slate-100">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-400 flex items-center justify-center">
                   <Wrench className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-sm">Book MosesTech Technician</h3>
-                  <p className="text-[11px] text-slate-500">Ugandan Onsite & Remote IT Repair Escalation</p>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-sm">Book MosesTech Technician</h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Ugandan Onsite & Remote IT Repair Escalation</p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setShowBookingModal(false)}
-                className="text-slate-400 hover:text-slate-700"
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -899,52 +1044,52 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-700 mb-1 font-bold">Customer Full Name</label>
+                <label className="block text-slate-700 dark:text-slate-300 mb-1 font-bold">Customer Full Name</label>
                 <input
                   type="text"
                   placeholder="e.g. Kagimu Ronald"
                   value={custName}
                   onChange={(e) => setCustName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-medium"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-700 mb-1 font-bold">Phone Number (MTN / Airtel)</label>
+                <label className="block text-slate-700 dark:text-slate-300 mb-1 font-bold">Phone Number (MTN / Airtel)</label>
                 <input
                   type="text"
                   placeholder="e.g. +256 702 123456"
                   value={custPhone}
                   onChange={(e) => setCustPhone(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-medium"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-700 mb-1 font-bold">Location / Area in Uganda</label>
+                <label className="block text-slate-700 dark:text-slate-300 mb-1 font-bold">Location / Area in Uganda</label>
                 <input
                   type="text"
                   placeholder="e.g. Ntinda, Kampala / Mukono / Entebbe"
                   value={custLoc}
                   onChange={(e) => setCustLoc(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-medium"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-700 mb-1 font-bold">Select Service Type</label>
+                <label className="block text-slate-700 dark:text-slate-300 mb-1 font-bold">Select Service Type</label>
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setBookingType('Remote Support')}
                     className={`p-2.5 rounded-xl border text-left transition-colors ${
                       bookingType === 'Remote Support'
-                        ? 'bg-blue-50 border-blue-400 text-blue-900'
-                        : 'bg-slate-50 border-slate-200 text-slate-700'
+                        ? 'bg-blue-50 dark:bg-blue-950/70 border-blue-400 text-blue-900 dark:text-blue-300'
+                        : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     <p className="font-bold text-[11px]">Remote Support</p>
-                    <p className="text-[10px] text-slate-500">UGX 20k - 25k</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">UGX 20k - 25k</p>
                   </button>
 
                   <button
@@ -952,12 +1097,12 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
                     onClick={() => setBookingType('Onsite Technician Visit')}
                     className={`p-2.5 rounded-xl border text-left transition-colors ${
                       bookingType === 'Onsite Technician Visit'
-                        ? 'bg-blue-50 border-blue-400 text-blue-900'
-                        : 'bg-slate-50 border-slate-200 text-slate-700'
+                        ? 'bg-blue-50 dark:bg-blue-950/70 border-blue-400 text-blue-900 dark:text-blue-300'
+                        : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     <p className="font-bold text-[11px]">Onsite Visit</p>
-                    <p className="text-[10px] text-slate-500">UGX 45,000+</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">UGX 45,000+</p>
                   </button>
 
                   <button
@@ -965,31 +1110,31 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
                     onClick={() => setBookingType('Shop Repair Drop-off')}
                     className={`p-2.5 rounded-xl border text-left transition-colors ${
                       bookingType === 'Shop Repair Drop-off'
-                        ? 'bg-blue-50 border-blue-400 text-blue-900'
-                        : 'bg-slate-50 border-slate-200 text-slate-700'
+                        ? 'bg-blue-50 dark:bg-blue-950/70 border-blue-400 text-blue-900 dark:text-blue-300'
+                        : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
                     }`}
                   >
-                    <p className="font-bold text-[11px]">Ntinda Shop Drop-off</p>
-                    <p className="text-[10px] text-slate-500">Free Diagnosis</p>
+                    <p className="font-bold text-[11px]">Ntinda Shop</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">Free Diagnosis</p>
                   </button>
                 </div>
               </div>
 
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1.5">
-                <p className="text-[11px] font-bold text-slate-800">Auto Case Ticket Summary:</p>
-                <p className="text-[11px] text-slate-600">
-                  <span className="font-bold text-slate-900">Device:</span> {selectedBrand} {selectedModel || selectedDevice}
+              <div className="bg-slate-50 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1.5">
+                <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200">Auto Case Ticket Summary:</p>
+                <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                  <span className="font-bold text-slate-900 dark:text-slate-100">Device:</span> {selectedBrand} {selectedModel || selectedDevice}
                 </p>
-                <p className="text-[11px] text-slate-600">
-                  <span className="font-bold text-slate-900">Symptoms:</span> {bookingTicketData?.symptoms || 'Troubleshooting'}
+                <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                  <span className="font-bold text-slate-900 dark:text-slate-100">Symptoms:</span> {bookingTicketData?.symptoms || 'Troubleshooting'}
                 </p>
-                <div className="pt-1 flex items-center justify-between border-t border-slate-200 mt-1">
-                  <span className="text-[11px] text-slate-500">More Information:</span>
+                <div className="pt-1 flex items-center justify-between border-t border-slate-200 dark:border-slate-700 mt-1">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">More Information:</span>
                   <a
                     href="https://mosestechfixsolution.com"
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[11px] font-bold text-emerald-700 hover:underline flex items-center gap-1"
+                    className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1"
                   >
                     <span>mosestechfixsolution.com</span>
                     <ExternalLink className="w-3 h-3" />
@@ -998,10 +1143,11 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
               </div>
             </div>
 
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-slate-100">
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-slate-100 dark:border-slate-800">
               <button
+                type="button"
                 onClick={() => setShowBookingModal(false)}
-                className="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl"
+                className="w-full sm:w-auto px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl"
               >
                 Cancel
               </button>
@@ -1014,7 +1160,7 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
                   title="Send via Airtel WhatsApp 0708262179"
                 >
                   <PhoneCall className="w-3.5 h-3.5" />
-                  <span>Send WhatsApp (0708262179)</span>
+                  <span>Airtel WhatsApp (0708262179)</span>
                 </button>
 
                 <button
@@ -1024,7 +1170,7 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
                   title="Send via MTN WhatsApp 0789218570"
                 >
                   <PhoneCall className="w-3.5 h-3.5" />
-                  <span>Send WhatsApp (0789218570)</span>
+                  <span>MTN WhatsApp (0789218570)</span>
                 </button>
               </div>
             </div>

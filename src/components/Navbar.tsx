@@ -1,7 +1,22 @@
 import React from 'react';
 import { BusinessProfile, UserRole } from '../types';
 import { getAccessStatus } from '../utils/subscriptionManager';
-import { Bot, BookOpen, Shield, Sparkles, Building, ChevronDown, Wrench, Ticket, ShoppingBag, FileText, LayoutDashboard, ExternalLink, Globe, Lock } from 'lucide-react';
+import {
+  Bot,
+  BookOpen,
+  Sparkles,
+  Building,
+  Wrench,
+  Ticket,
+  ShoppingBag,
+  FileText,
+  LayoutDashboard,
+  ExternalLink,
+  Globe,
+  Lock,
+  Sun,
+  Moon,
+} from 'lucide-react';
 
 interface NavbarProps {
   profile: BusinessProfile;
@@ -12,6 +27,8 @@ interface NavbarProps {
   onOpenEmbedModal?: () => void;
   onRoleChange: (role: UserRole) => void;
   aiRequestCount: number;
+  theme?: 'dark' | 'light';
+  toggleTheme?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -21,190 +38,197 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenKnowledge,
   onOpenSubscription,
   onOpenEmbedModal,
-  onRoleChange,
   aiRequestCount,
+  theme = 'dark',
+  toggleTheme,
 }) => {
+  const access = getAccessStatus();
+
   return (
-    <header className="bg-white text-slate-900 border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="bg-white/95 dark:bg-slate-950/90 text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800/80 sticky top-0 z-40 backdrop-blur-md transition-colors">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Brand & Business Selector */}
+          
+          {/* Brand Logo & System Status */}
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setActiveTab('assistant')}
-              className="flex items-center space-x-2 text-left focus:outline-none group"
+              className="flex items-center space-x-2.5 text-left focus:outline-none group"
             >
-              <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-emerald-600/20">
-                <Wrench className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/25 group-hover:scale-105 transition-transform">
+                <Wrench className="w-5 h-5 text-slate-950" />
               </div>
               <div>
                 <div className="flex items-center space-x-2">
-                  <span className="font-bold text-base tracking-tight text-slate-900 group-hover:text-emerald-600 transition-colors">
+                  <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">
                     MosesTech Fix AI
                   </span>
-                  <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <span className="bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    IT Diagnostic
+                    Diagnostic HUD
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 truncate max-w-[180px] sm:max-w-xs">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[170px] sm:max-w-xs">
                   {profile.name}
                 </p>
               </div>
             </button>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
+          {/* Desktop Navigation Tabs */}
+          <nav className="hidden md:flex items-center space-x-1 lg:space-x-1.5 bg-slate-100/80 dark:bg-slate-900/80 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
             <button
               onClick={() => setActiveTab('assistant')}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center space-x-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
                 activeTab === 'assistant'
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
               }`}
             >
-              <Bot className="w-3.5 h-3.5 text-emerald-600" />
+              <Bot className="w-3.5 h-3.5" />
               <span>Fix AI Diagnoser</span>
             </button>
 
             <button
               onClick={() => setActiveTab('tickets')}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center space-x-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
                 activeTab === 'tickets'
-                  ? 'bg-blue-50 text-blue-700 border border-blue-200 font-bold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
               }`}
             >
-              <Ticket className="w-3.5 h-3.5 text-blue-600" />
-              <span>Repair Tickets & Bookings</span>
+              <Ticket className="w-3.5 h-3.5" />
+              <span>Repair Tickets</span>
             </button>
 
             <button
               onClick={() => setActiveTab('dashboard')}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center space-x-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
                 activeTab === 'dashboard'
-                  ? 'bg-teal-50 text-teal-700 border border-teal-200 font-bold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
               }`}
             >
-              <LayoutDashboard className="w-3.5 h-3.5 text-teal-600" />
-              <span>Repair Center Dashboard</span>
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span>Dashboard</span>
             </button>
 
             <button
               onClick={() => setActiveTab('documents')}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center space-x-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
                 activeTab === 'documents'
-                  ? 'bg-purple-50 text-purple-700 border border-purple-200 font-bold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
               }`}
             >
-              <FileText className="w-3.5 h-3.5 text-purple-600" />
-              <span>Quotations & Invoices</span>
+              <FileText className="w-3.5 h-3.5" />
+              <span>Invoices & dfcu</span>
             </button>
 
             <button
               onClick={() => setActiveTab('products')}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center space-x-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
                 activeTab === 'products'
-                  ? 'bg-amber-50 text-amber-700 border border-amber-200 font-bold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  ? 'bg-amber-600 text-white shadow-md shadow-amber-600/20'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
               }`}
             >
-              <ShoppingBag className="w-3.5 h-3.5 text-amber-600" />
-              <span>Spare Parts & Stock</span>
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span>Spare Parts</span>
             </button>
 
-            {/* Prominent Website Navigation Button */}
+            {/* Official Website Link */}
             <a
               href="https://mosestechfixsolution.com"
               target="_blank"
               rel="noreferrer"
-              className="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 text-xs font-bold flex items-center space-x-1.5 shadow-sm transition-all hover:scale-[1.02]"
-              title="Visit MosesTech Fix Solution Official Website (0708262179 / 0789218570)"
+              className="px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors"
+              title="Visit MosesTech Fix Solution (0789218570 / 0708262179)"
             >
-              <Globe className="w-3.5 h-3.5 text-white animate-pulse" />
-              <span>mosestechfixsolution.com</span>
-              <ExternalLink className="w-3 h-3 text-white" />
+              <Globe className="w-3.5 h-3.5" />
+              <span className="hidden xl:inline">Website</span>
+              <ExternalLink className="w-3 h-3 opacity-70" />
             </a>
           </nav>
 
-          {/* Right Header Controls */}
+          {/* Right Header Controls: Theme, Knowledge, Subscriptions */}
           <div className="flex items-center space-x-1.5 sm:space-x-2">
-            {/* Website Integration & Embed Code Button */}
-            {onOpenEmbedModal && (
+            
+            {/* Theme Toggle Button (Light / Dark) */}
+            {toggleTheme && (
               <button
-                onClick={onOpenEmbedModal}
-                className="px-2 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center space-x-1 border border-emerald-300 transition-all hover:scale-105 shadow-sm"
-                title="Get Embed Code for mosestechfixsolution.com"
+                type="button"
+                onClick={toggleTheme}
+                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 border border-slate-200 dark:border-slate-800 transition-all hover:scale-105 shadow-sm"
+                title={theme === 'dark' ? 'Switch to Clean Light Mode' : 'Switch to Cyber-Emerald Dark Mode'}
+                aria-label="Toggle dark/light theme"
               >
-                <Globe className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span className="hidden sm:inline">Embed Code</span>
+                {theme === 'dark' ? (
+                  <Sun className="w-4 h-4 text-amber-400" />
+                ) : (
+                  <Moon className="w-4 h-4 text-slate-700" />
+                )}
               </button>
             )}
 
-            {/* Tech Knowledge Base Button */}
+            {/* Embed Code Modal Trigger */}
+            {onOpenEmbedModal && (
+              <button
+                onClick={onOpenEmbedModal}
+                className="hidden sm:flex px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-xs font-bold items-center space-x-1 border border-emerald-300 dark:border-emerald-500/30 transition-all shadow-sm"
+                title="Get Embed Code for your website"
+              >
+                <Globe className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span className="hidden lg:inline">Embed Code</span>
+              </button>
+            )}
+
+            {/* Official Tech Guides */}
             <button
               onClick={onOpenKnowledge}
-              className="px-2 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium flex items-center space-x-1 border border-slate-200 transition-colors"
+              className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center space-x-1 border border-slate-200 dark:border-slate-800 transition-colors shadow-sm"
               title="Official Tech Knowledge Base (Microsoft, HP, Dell, Lenovo)"
             >
-              <BookOpen className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-              <span className="hidden lg:inline">Official Guides</span>
+              <BookOpen className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span className="hidden sm:inline">Guides</span>
             </button>
 
-            {/* 3-Day Free Trial & Access Status Button */}
-            {(() => {
-              const access = getAccessStatus();
-              return (
-                <button
-                  onClick={onOpenSubscription}
-                  className={`px-2 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 shadow-sm transition-all hover:scale-105 ${
-                    access.isLocked
-                      ? 'bg-red-600 hover:bg-red-500 text-white animate-pulse'
-                      : access.isPaid
-                      ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                      : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white'
-                  }`}
-                  title={access.statusMessage}
-                >
-                  {access.isLocked ? (
-                    <Lock className="w-3.5 h-3.5 text-white shrink-0" />
-                  ) : (
-                    <span className="shrink-0">🎁</span>
-                  )}
-                  <span className="hidden md:inline">
-                    {access.isLocked
-                      ? 'System Locked'
-                      : access.isPaid
-                      ? 'Paid VIP'
-                      : '3-Day Free Trial'}
-                  </span>
-                </button>
-              );
-            })()}
-
-            {/* AI Usage / Subscription Badge */}
+            {/* Access Status & Subscription Button */}
             <button
               onClick={onOpenSubscription}
-              className="px-2 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-medium flex items-center space-x-1 border border-emerald-200 transition-colors"
-              title="AI Request Usage"
+              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center space-x-1.5 shadow-sm transition-all hover:scale-105 ${
+                access.isLocked
+                  ? 'bg-red-600 hover:bg-red-500 text-white animate-pulse'
+                  : access.isPaid
+                  ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black'
+                  : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white'
+              }`}
+              title={access.statusMessage}
             >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span className="hidden md:inline">AI:</span>
-              <span className="font-bold text-slate-900 text-xs">{aiRequestCount}/50</span>
+              {access.isLocked ? (
+                <Lock className="w-3.5 h-3.5 text-white shrink-0" />
+              ) : (
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+              )}
+              <span>
+                {access.isLocked
+                  ? 'Locked'
+                  : access.isPaid
+                  ? 'VIP Plan'
+                  : '\$5/mo Plan'}
+              </span>
             </button>
 
-            {/* Settings */}
+            {/* Business Settings */}
             <button
               onClick={() => setActiveTab('settings')}
-              className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
+              className={`p-2 rounded-xl transition-all ${
                 activeTab === 'settings'
-                  ? 'bg-emerald-100 text-emerald-700'
-                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                  ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900 border border-transparent'
               }`}
               title="Business Settings"
+              aria-label="Settings"
             >
               <Building className="w-4 h-4" />
             </button>
@@ -214,4 +238,3 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
-

@@ -23,16 +23,17 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     <>
       {/* Mobile Menu Popover Drawer */}
       {isMenuOpen && (
-        <div className="md:hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex flex-col justify-end animate-fade-in">
-          <div className="bg-slate-900 border-t border-slate-800 rounded-t-2xl p-4 shadow-2xl text-white space-y-4 max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div className="md:hidden fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex flex-col justify-end animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 rounded-t-2xl p-4 shadow-2xl text-slate-900 dark:text-white space-y-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center space-x-2">
-                <Wrench className="w-5 h-5 text-emerald-400" />
-                <span className="font-bold text-sm text-white">MosesTech Fix AI Modules</span>
+                <Wrench className="w-5 h-5 text-emerald-500" />
+                <span className="font-bold text-sm text-slate-900 dark:text-white">MosesTech Fix AI Modules</span>
               </div>
               <button
+                type="button"
                 onClick={() => setIsMenuOpen(false)}
-                className="p-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white"
+                className="p-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -40,98 +41,106 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
             <div className="grid grid-cols-2 gap-2 text-xs font-medium">
               <button
+                type="button"
                 onClick={() => handleTabClick('assistant')}
                 className={`p-3 rounded-xl border flex items-center space-x-2.5 transition-colors ${
                   activeTab === 'assistant'
-                    ? 'bg-emerald-600/20 border-emerald-500 text-emerald-300 font-bold'
-                    : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'
+                    ? 'bg-emerald-50 dark:bg-emerald-600/20 border-emerald-500 text-emerald-800 dark:text-emerald-300 font-bold'
+                    : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
-                <Wrench className="w-4 h-4 text-emerald-400 shrink-0" />
+                <Wrench className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span className="truncate">Fix AI Diagnoser</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => handleTabClick('tickets')}
                 className={`p-3 rounded-xl border flex items-center space-x-2.5 transition-colors ${
                   activeTab === 'tickets'
-                    ? 'bg-blue-600/20 border-blue-500 text-blue-300 font-bold'
-                    : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'
+                    ? 'bg-blue-50 dark:bg-blue-600/20 border-blue-500 text-blue-800 dark:text-blue-300 font-bold'
+                    : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
-                <Ticket className="w-4 h-4 text-blue-400 shrink-0" />
+                <Ticket className="w-4 h-4 text-blue-500 shrink-0" />
                 <span className="truncate">Repair Tickets</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => handleTabClick('dashboard')}
                 className={`p-3 rounded-xl border flex items-center space-x-2.5 transition-colors ${
                   activeTab === 'dashboard'
-                    ? 'bg-teal-600/20 border-teal-500 text-teal-300 font-bold'
-                    : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'
+                    ? 'bg-teal-50 dark:bg-teal-600/20 border-teal-500 text-teal-800 dark:text-teal-300 font-bold'
+                    : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
-                <LayoutDashboard className="w-4 h-4 text-teal-400 shrink-0" />
+                <LayoutDashboard className="w-4 h-4 text-teal-500 shrink-0" />
                 <span className="truncate">Dashboard</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => handleTabClick('documents')}
                 className={`p-3 rounded-xl border flex items-center space-x-2.5 transition-colors ${
                   activeTab === 'documents'
-                    ? 'bg-purple-600/20 border-purple-500 text-purple-300 font-bold'
-                    : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'
+                    ? 'bg-purple-50 dark:bg-purple-600/20 border-purple-500 text-purple-800 dark:text-purple-300 font-bold'
+                    : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
-                <FileText className="w-4 h-4 text-purple-400 shrink-0" />
-                <span className="truncate">Quotations & Invoices</span>
+                <FileText className="w-4 h-4 text-purple-500 shrink-0" />
+                <span className="truncate">Invoices & Quotes</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => handleTabClick('products')}
                 className={`p-3 rounded-xl border flex items-center space-x-2.5 transition-colors ${
                   activeTab === 'products'
-                    ? 'bg-amber-600/20 border-amber-500 text-amber-300 font-bold'
-                    : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'
+                    ? 'bg-amber-50 dark:bg-amber-600/20 border-amber-500 text-amber-800 dark:text-amber-300 font-bold'
+                    : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
-                <ShoppingBag className="w-4 h-4 text-amber-400 shrink-0" />
-                <span className="truncate">Spare Parts & Stock</span>
+                <ShoppingBag className="w-4 h-4 text-amber-500 shrink-0" />
+                <span className="truncate">Parts & Stock</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => handleTabClick('sales')}
                 className={`p-3 rounded-xl border flex items-center space-x-2.5 transition-colors ${
                   activeTab === 'sales'
-                    ? 'bg-emerald-600/20 border-emerald-500 text-emerald-300 font-bold'
-                    : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'
+                    ? 'bg-emerald-50 dark:bg-emerald-600/20 border-emerald-500 text-emerald-800 dark:text-emerald-300 font-bold'
+                    : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
-                <DollarSign className="w-4 h-4 text-emerald-400 shrink-0" />
+                <DollarSign className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span className="truncate">Sales & Expenses</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => handleTabClick('customers')}
                 className={`p-3 rounded-xl border flex items-center space-x-2.5 transition-colors ${
                   activeTab === 'customers'
-                    ? 'bg-rose-600/20 border-rose-500 text-rose-300 font-bold'
-                    : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'
+                    ? 'bg-rose-50 dark:bg-rose-600/20 border-rose-500 text-rose-800 dark:text-rose-300 font-bold'
+                    : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
-                <Users className="w-4 h-4 text-rose-400 shrink-0" />
+                <Users className="w-4 h-4 text-rose-500 shrink-0" />
                 <span className="truncate">Customers & Debts</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => handleTabClick('settings')}
                 className={`p-3 rounded-xl border flex items-center space-x-2.5 transition-colors ${
                   activeTab === 'settings'
-                    ? 'bg-slate-700/50 border-slate-600 text-slate-200 font-bold'
-                    : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800'
+                    ? 'bg-slate-100 dark:bg-slate-800 border-slate-400 dark:border-slate-600 text-slate-900 dark:text-slate-200 font-bold'
+                    : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
-                <Building className="w-4 h-4 text-slate-400 shrink-0" />
+                <Building className="w-4 h-4 text-slate-500 shrink-0" />
                 <span className="truncate">Settings & Profile</span>
               </button>
             </div>
@@ -150,12 +159,13 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       )}
 
       {/* Persistent Bottom Mobile Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 z-40 px-2 py-1.5 shadow-2xl">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-950/95 border-t border-slate-200 dark:border-slate-800 z-40 px-2 py-1.5 shadow-2xl backdrop-blur-md transition-colors">
         <div className="grid grid-cols-5 items-center text-center">
           <button
+            type="button"
             onClick={() => setActiveTab('assistant')}
             className={`flex flex-col items-center py-1 text-[11px] font-medium transition-colors ${
-              activeTab === 'assistant' ? 'text-emerald-400 font-bold' : 'text-slate-400'
+              activeTab === 'assistant' ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500 dark:text-slate-400'
             }`}
           >
             <Wrench className="w-5 h-5 mb-0.5" />
@@ -163,9 +173,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab('tickets')}
             className={`flex flex-col items-center py-1 text-[11px] font-medium transition-colors ${
-              activeTab === 'tickets' ? 'text-blue-400 font-bold' : 'text-slate-400'
+              activeTab === 'tickets' ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-500 dark:text-slate-400'
             }`}
           >
             <Ticket className="w-5 h-5 mb-0.5" />
@@ -175,8 +186,9 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           {/* Quick Add Center Button */}
           <div className="flex justify-center">
             <button
+              type="button"
               onClick={onQuickAddSale}
-              className="w-12 h-12 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full flex items-center justify-center -mt-6 shadow-lg border-2 border-slate-900 transition-transform active:scale-95"
+              className="w-12 h-12 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full flex items-center justify-center -mt-6 shadow-lg border-2 border-white dark:border-slate-900 transition-transform active:scale-95"
               title="Diagnose / Quick Action"
             >
               <PlusCircle className="w-6 h-6" />
@@ -184,9 +196,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           </div>
 
           <button
+            type="button"
             onClick={() => setActiveTab('dashboard')}
             className={`flex flex-col items-center py-1 text-[11px] font-medium transition-colors ${
-              activeTab === 'dashboard' ? 'text-teal-400 font-bold' : 'text-slate-400'
+              activeTab === 'dashboard' ? 'text-teal-600 dark:text-teal-400 font-bold' : 'text-slate-500 dark:text-slate-400'
             }`}
           >
             <LayoutDashboard className="w-5 h-5 mb-0.5" />
@@ -194,11 +207,12 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           </button>
 
           <button
+            type="button"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className={`flex flex-col items-center py-1 text-[11px] font-medium transition-colors ${
               isMenuOpen || ['documents', 'products', 'sales', 'customers', 'settings'].includes(activeTab)
-                ? 'text-emerald-400 font-bold'
-                : 'text-slate-400'
+                ? 'text-emerald-600 dark:text-emerald-400 font-bold'
+                : 'text-slate-500 dark:text-slate-400'
             }`}
           >
             <Menu className="w-5 h-5 mb-0.5" />
@@ -209,5 +223,3 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     </>
   );
 };
-
-

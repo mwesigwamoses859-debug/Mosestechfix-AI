@@ -75,22 +75,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className="space-y-6 pb-16 md:pb-6 text-slate-900">
+    <div className="space-y-6 pb-16 md:pb-6 text-slate-900 dark:text-slate-100 transition-colors">
       {/* Top Live Workshop & System Status Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
         <div className="flex items-center space-x-3">
           <div className="relative flex items-center justify-center">
             <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </div>
           <div>
-            <div className="flex items-center space-x-2 text-xs font-bold text-slate-900">
+            <div className="flex items-center space-x-2 text-xs font-bold text-slate-900 dark:text-white">
               <span>MosesTech Fix Workshop Online</span>
-              <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-full font-mono">
+              <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-600 px-2 py-0.5 rounded-full font-mono">
                 Ntinda Shop G-12
               </span>
             </div>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
               Live AI Diagnostics • Motherboard Micro-soldering • Screen & Battery Tech Hub
             </p>
           </div>
@@ -114,18 +114,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div
           onClick={() => setActiveTab('sales')}
-          className="bg-white hover:bg-slate-50 p-4 rounded-2xl border border-slate-200 hover:border-emerald-500 transition-all cursor-pointer group shadow-sm"
+          className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer group shadow-sm"
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-500">Total Revenue</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Revenue</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center group-hover:scale-110 transition-transform">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-lg sm:text-xl font-extrabold text-slate-900 font-mono">
+          <div className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white font-mono">
             {formatUGX(totalSalesUGX)}
           </div>
-          <div className="flex items-center space-x-1 text-[11px] text-emerald-700 mt-1 font-medium">
+          <div className="flex items-center space-x-1 text-[11px] text-emerald-700 dark:text-emerald-400 mt-1 font-medium">
             <CheckCircle2 className="w-3 h-3" />
             <span>{sales.length} Completed Transactions</span>
           </div>
@@ -133,18 +133,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         <div
           onClick={() => setActiveTab('tickets')}
-          className="bg-white hover:bg-slate-50 p-4 rounded-2xl border border-slate-200 hover:border-blue-500 transition-all cursor-pointer group shadow-sm"
+          className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 transition-all cursor-pointer group shadow-sm"
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-500">Repair Tickets</span>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Repair Tickets</span>
+            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Ticket className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-lg sm:text-xl font-extrabold text-slate-900 font-mono">
+          <div className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white font-mono">
             {documents.length + 3} Active Cases
           </div>
-          <div className="flex items-center space-x-1 text-[11px] text-blue-700 mt-1 font-medium">
+          <div className="flex items-center space-x-1 text-[11px] text-blue-700 dark:text-blue-400 mt-1 font-medium">
             <Activity className="w-3 h-3" />
             <span>Real-time Technician Tracking</span>
           </div>
@@ -152,18 +152,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         <div
           onClick={() => setActiveTab('documents')}
-          className="bg-white hover:bg-slate-50 p-4 rounded-2xl border border-slate-200 hover:border-amber-500 transition-all cursor-pointer group shadow-sm"
+          className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-amber-500 dark:hover:border-amber-500 transition-all cursor-pointer group shadow-sm"
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-500">Quotations</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Quotations</span>
+            <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 flex items-center justify-center group-hover:scale-110 transition-transform">
               <CreditCard className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-lg sm:text-xl font-extrabold text-slate-900 font-mono">
+          <div className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white font-mono">
             {pendingDocsCount} Pending
           </div>
-          <div className="flex items-center space-x-1 text-[11px] text-amber-700 mt-1 font-medium">
+          <div className="flex items-center space-x-1 text-[11px] text-amber-700 dark:text-amber-400 mt-1 font-medium">
             <Clock className="w-3 h-3" />
             <span>{documents.length} Total Invoices Issued</span>
           </div>
@@ -171,18 +171,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         <div
           onClick={() => setActiveTab('products')}
-          className="bg-white hover:bg-slate-50 p-4 rounded-2xl border border-slate-200 hover:border-purple-500 transition-all cursor-pointer group shadow-sm"
+          className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-purple-500 dark:hover:border-purple-500 transition-all cursor-pointer group shadow-sm"
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-500">Parts Inventory</span>
-            <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 border border-purple-200 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Parts Inventory</span>
+            <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/70 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Package className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-lg sm:text-xl font-extrabold text-slate-900 font-mono">
+          <div className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white font-mono">
             {totalProducts} Items
           </div>
-          <div className="flex items-center space-x-1 text-[11px] text-purple-700 mt-1 font-medium">
+          <div className="flex items-center space-x-1 text-[11px] text-purple-700 dark:text-purple-400 mt-1 font-medium">
             <Flame className="w-3 h-3" />
             <span>Screens, RAM, SSDs & Printers</span>
           </div>
@@ -190,7 +190,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       {/* Hero AI Quick Diagnostic Bar */}
-      <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 rounded-2xl p-5 sm:p-6 text-white border border-emerald-700 shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 rounded-2xl p-5 sm:p-6 text-white border border-emerald-700/80 shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
@@ -295,20 +295,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* 1. AI Diagnostic Troubleshooter */}
         <div
           onClick={() => setActiveTab('assistant')}
-          className="bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 hover:border-emerald-500 transition-all cursor-pointer group shadow-sm flex flex-col justify-between"
+          className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer group shadow-sm flex flex-col justify-between"
         >
           <div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
               <Wrench className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-bold text-slate-900 mb-1 group-hover:text-emerald-700 transition-colors">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
               AI Diagnostic Troubleshooter
             </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
               Step-by-step guidance for laptops, desktops, printers, and routers with Green/Amber/Red safety checks.
             </p>
           </div>
-          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-emerald-700 font-semibold">
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
             <span>Diagnose Device</span>
             <ArrowUpRight className="w-4 h-4" />
           </div>
@@ -317,20 +317,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* 2. Repair Tickets & Technician Booking */}
         <div
           onClick={() => setActiveTab('tickets')}
-          className="bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 hover:border-blue-500 transition-all cursor-pointer group shadow-sm flex flex-col justify-between"
+          className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 transition-all cursor-pointer group shadow-sm flex flex-col justify-between"
         >
           <div>
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
               <Ticket className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-bold text-slate-900 mb-1 group-hover:text-blue-700 transition-colors">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
               Repair Tickets & Booking
             </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
               Track active computer repair cases, update repair statuses, and dispatch WhatsApp case summaries to technicians.
             </p>
           </div>
-          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-blue-700 font-semibold">
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-blue-600 dark:text-blue-400 font-semibold">
             <span>Manage Tickets</span>
             <ArrowUpRight className="w-4 h-4" />
           </div>
@@ -339,20 +339,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* 3. Official Knowledge Base */}
         <div
           onClick={() => setActiveTab('knowledge')}
-          className="bg-white hover:bg-slate-50 p-5 rounded-2xl border border-slate-200 hover:border-purple-500 transition-all cursor-pointer group shadow-sm flex flex-col justify-between"
+          className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-purple-500 dark:hover:border-purple-500 transition-all cursor-pointer group shadow-sm flex flex-col justify-between"
         >
           <div>
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 border border-purple-200 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/70 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
               <BookOpen className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-bold text-slate-900 mb-1 group-hover:text-purple-700 transition-colors">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
               Official Repair Guides
             </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
               Verified HP, Dell, Lenovo, and Epson troubleshooting manuals and component repair guidelines.
             </p>
           </div>
-          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-purple-700 font-semibold">
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-purple-600 dark:text-purple-400 font-semibold">
             <span>Open Library</span>
             <ArrowUpRight className="w-4 h-4" />
           </div>
@@ -363,20 +363,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
           href="https://mosestechfixsolution.com"
           target="_blank"
           rel="noreferrer"
-          className="bg-emerald-50 hover:bg-emerald-100/80 p-5 rounded-2xl border border-emerald-200 transition-all group shadow-sm flex flex-col justify-between"
+          className="bg-emerald-50/70 dark:bg-emerald-950/30 hover:bg-emerald-100/70 dark:hover:bg-emerald-950/50 p-5 rounded-2xl border border-emerald-200 dark:border-emerald-800/80 transition-all group shadow-sm flex flex-col justify-between"
         >
           <div>
             <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-sm">
               <Globe className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-bold text-slate-900 mb-1 text-emerald-900">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">
               MosesTech Fix Solution Portal
             </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Explore hardware packages, software installation, printer setup, and IT maintenance contracts at <strong className="text-slate-900">mosestechfixsolution.com</strong>.
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              Explore hardware packages, software installation, printer setup, and IT maintenance contracts at <strong className="text-emerald-700 dark:text-emerald-400">mosestechfixsolution.com</strong>.
             </p>
           </div>
-          <div className="mt-4 pt-3 border-t border-emerald-200 flex items-center justify-between text-xs text-emerald-800 font-bold">
+          <div className="mt-4 pt-3 border-t border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-300 font-bold">
             <span>Visit mosestechfixsolution.com</span>
             <ExternalLink className="w-4 h-4" />
           </div>
@@ -384,17 +384,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       {/* Hardware & IT Scope Banner */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center space-x-2 text-xs font-extrabold text-emerald-700 uppercase tracking-wider">
+            <div className="flex items-center space-x-2 text-xs font-extrabold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
               <ShieldCheck className="w-4 h-4" />
               <span>MosesTech Fix AI — Full Service Coverage</span>
             </div>
-            <h2 className="text-lg font-bold text-slate-900">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
               Professional IT Technical Support & Repairs
             </h2>
-            <p className="text-xs text-slate-500 max-w-3xl">
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-3xl">
               Located at Shop G-12, Ntinda Shopping Centre, Kampala. We specialize in motherboard micro-soldering, laptop screen replacements, battery testing, printer ink head declogging, and corporate office IT maintenance.
             </p>
           </div>
@@ -422,33 +422,33 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Supported Hardware Icons */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-slate-100 text-xs">
-          <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 rounded-xl border border-slate-200">
-            <Laptop className="w-4 h-4 text-emerald-600 shrink-0" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+          <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 dark:bg-slate-800/70 rounded-xl border border-slate-200 dark:border-slate-700">
+            <Laptop className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <div>
-              <span className="font-bold text-slate-900 block">Laptops & Notebooks</span>
-              <span className="text-[10px] text-slate-500">HP, Dell, Lenovo, Mac</span>
+              <span className="font-bold text-slate-900 dark:text-slate-100 block">Laptops & Notebooks</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">HP, Dell, Lenovo, Mac</span>
             </div>
           </div>
-          <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 rounded-xl border border-slate-200">
-            <Monitor className="w-4 h-4 text-blue-600 shrink-0" />
+          <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 dark:bg-slate-800/70 rounded-xl border border-slate-200 dark:border-slate-700">
+            <Monitor className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
             <div>
-              <span className="font-bold text-slate-900 block">Desktops & Workstations</span>
-              <span className="text-[10px] text-slate-500">Power supplies, GPUs</span>
+              <span className="font-bold text-slate-900 dark:text-slate-100 block">Desktops & Workstations</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">Power supplies, GPUs</span>
             </div>
           </div>
-          <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 rounded-xl border border-slate-200">
-            <Printer className="w-4 h-4 text-purple-600 shrink-0" />
+          <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 dark:bg-slate-800/70 rounded-xl border border-slate-200 dark:border-slate-700">
+            <Printer className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
             <div>
-              <span className="font-bold text-slate-900 block">Printers & Scanners</span>
-              <span className="text-[10px] text-slate-500">Epson, HP InkTank</span>
+              <span className="font-bold text-slate-900 dark:text-slate-100 block">Printers & Scanners</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">Epson, HP InkTank</span>
             </div>
           </div>
-          <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 rounded-xl border border-slate-200">
-            <Wifi className="w-4 h-4 text-amber-600 shrink-0" />
+          <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 dark:bg-slate-800/70 rounded-xl border border-slate-200 dark:border-slate-700">
+            <Wifi className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
             <div>
-              <span className="font-bold text-slate-900 block">Networks & Wi-Fi</span>
-              <span className="text-[10px] text-slate-500">Routers, LAN, Switches</span>
+              <span className="font-bold text-slate-900 dark:text-slate-100 block">Networks & Wi-Fi</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">Routers, LAN, Switches</span>
             </div>
           </div>
         </div>

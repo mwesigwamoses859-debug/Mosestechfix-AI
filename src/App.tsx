@@ -55,6 +55,25 @@ export default function App() {
   const [aiRequestCount, setAiRequestCount] = useState(14);
   const [sharedDoc, setSharedDoc] = useState<BusinessDocument | null>(null);
 
+  // Theme State (Default: Dark Command Center, with Light Mode toggle)
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('m_fix_theme') : null;
+    return saved === 'light' || saved === 'dark' ? saved : 'dark';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('m_fix_theme', theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
   // Persistent States
   const [profile, setProfile] = useState<BusinessProfile>(() => {
     const saved = localStorage.getItem('m_fix_profile');
@@ -198,7 +217,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col">
+    <div className={`min-h-screen font-sans flex flex-col transition-colors duration-200 ${
+      theme === 'dark' ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+    }`}>
       {/* Top Header Navbar */}
       <Navbar
         profile={profile}
@@ -209,6 +230,8 @@ export default function App() {
         onOpenEmbedModal={() => setIsEmbedModalOpen(true)}
         onRoleChange={handleRoleChange}
         aiRequestCount={aiRequestCount}
+        theme={theme}
+        toggleTheme={toggleTheme}
       />
 
       {/* Main App Canvas */}
