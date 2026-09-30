@@ -15,6 +15,8 @@ import {
   ChatMessage,
   UserRole,
   CaseTicket,
+  DeviceCategory,
+  Manufacturer,
 } from './types';
 import {
   INITIAL_BUSINESS_PROFILE,
@@ -49,6 +51,7 @@ import { AdminAuthModal } from './components/AdminAuthModal';
 import { TicketTrackerModal } from './components/TicketTrackerModal';
 import { AppDownloadModal } from './components/AppDownloadModal';
 import { ErrorCodeScannerModal } from './components/ErrorCodeScannerModal';
+import { WebsiteEmbedModal } from './components/WebsiteEmbedModal';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('assistant');

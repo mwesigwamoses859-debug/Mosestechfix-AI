@@ -1,5 +1,5 @@
-// MosesTech Fix AI Service Worker - Offline Diagnostic Support
-const CACHE_NAME = 'mosestech-cache-v2';
+// MosesTech Fix AI Service Worker - Safe Offline Diagnostic Support
+const CACHE_NAME = 'mosestech-cache-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -32,7 +32,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Pass through API calls or use offline cache for static assets
+  // Pass through or fallback for API calls
   if (event.request.url.includes('/api/')) {
     event.respondWith(
       fetch(event.request).catch(() => {
@@ -51,23 +51,36 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Handle SPA navigation requests: Fallback to /index.html ONLY for HTML page navigations
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const toCache = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, toCache));
+          }
+          return response;
+        })
+        .catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+
+  // For JS, CSS, images, and other assets: cache-first or network, NEVER return HTML on error
   event.respondWith(
     caches.match(event.request).then((cached) => {
-      return (
-        cached ||
-        fetch(event.request)
-          .then((response) => {
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            const toCache = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, toCache);
-            });
-            return response;
-          })
-          .catch(() => caches.match('/index.html'))
-      );
+      if (cached) return cached;
+      return fetch(event.request).then((response) => {
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response;
+        }
+        const toCache = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, toCache);
+        });
+        return response;
+      });
     })
   );
 });
