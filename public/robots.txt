@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mosestechfixai.mwesigwamoses859.workers.dev/sitemap.xml
