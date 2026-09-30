@@ -46,6 +46,7 @@ import { KnowledgeBaseModal } from './components/KnowledgeBaseModal';
 import { BusinessSettings } from './components/BusinessSettings';
 import { SubscriptionModal } from './components/SubscriptionModal';
 import { WebsiteEmbedModal } from './components/WebsiteEmbedModal';
+import { AdminAuthModal } from './components/AdminAuthModal';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('assistant');
@@ -54,6 +55,35 @@ export default function App() {
   const [isEmbedModalOpen, setIsEmbedModalOpen] = useState(false);
   const [aiRequestCount, setAiRequestCount] = useState(14);
   const [sharedDoc, setSharedDoc] = useState<BusinessDocument | null>(null);
+
+  // Admin Security State (Default: Locked / False for public visitors)
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
+    return typeof window !== 'undefined' ? localStorage.getItem('m_fix_is_admin') === 'true' : false;
+  });
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+
+  const handleAdminLoginSuccess = () => {
+    setIsAdmin(true);
+    localStorage.setItem('m_fix_is_admin', 'true');
+    setIsAdminModalOpen(false);
+    setActiveTab('dashboard');
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdmin(false);
+    localStorage.removeItem('m_fix_is_admin');
+    setActiveTab('assistant');
+  };
+
+  // Safe tab selection: if visitor tries to access an admin-only tab without admin credentials, open the modal
+  const handleTabChange = (tab: string) => {
+    const adminTabs = ['dashboard', 'documents', 'sales', 'customers', 'products', 'settings'];
+    if (adminTabs.includes(tab) && !isAdmin) {
+      setIsAdminModalOpen(true);
+      return;
+    }
+    setActiveTab(tab);
+  };
 
   // Theme State (Default: Dark Command Center, with Light Mode toggle)
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -224,7 +254,7 @@ export default function App() {
       <Navbar
         profile={profile}
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleTabChange}
         onOpenKnowledge={() => setIsKnowledgeOpen(true)}
         onOpenSubscription={() => setIsSubscriptionOpen(true)}
         onOpenEmbedModal={() => setIsEmbedModalOpen(true)}
@@ -232,6 +262,9 @@ export default function App() {
         aiRequestCount={aiRequestCount}
         theme={theme}
         toggleTheme={toggleTheme}
+        isAdmin={isAdmin}
+        onOpenAdminModal={() => setIsAdminModalOpen(true)}
+        onLogoutAdmin={handleAdminLogout}
       />
 
       {/* Main App Canvas */}
@@ -256,67 +289,82 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'dashboard' && (
-          <Dashboard
-            profile={profile}
-            sales={sales}
-            expenses={expenses}
-            debts={debts}
-            documents={documents}
-            products={products}
-            setActiveTab={setActiveTab}
-            onOpenQuickSale={() => setActiveTab('sales')}
-            onOpenQuickQuotation={() => setActiveTab('documents')}
-            onQuickPromptAI={handleQuickPromptAI}
-          />
-        )}
+        {/* Admin-Only Sections (Protected behind PIN for Mwesigwa Moses) */}
+        {isAdmin && (
+          <>
+            {activeTab === 'dashboard' && (
+              <Dashboard
+                profile={profile}
+                sales={sales}
+                expenses={expenses}
+                debts={debts}
+                documents={documents}
+                products={products}
+                setActiveTab={handleTabChange}
+                onOpenQuickSale={() => handleTabChange('sales')}
+                onOpenQuickQuotation={() => handleTabChange('documents')}
+                onQuickPromptAI={handleQuickPromptAI}
+              />
+            )}
 
-        {activeTab === 'documents' && (
-          <QuotationInvoiceManager
-            profile={profile}
-            documents={documents}
-            setDocuments={setDocuments}
-            customers={customers}
-          />
-        )}
+            {activeTab === 'documents' && (
+              <QuotationInvoiceManager
+                profile={profile}
+                documents={documents}
+                setDocuments={setDocuments}
+                customers={customers}
+              />
+            )}
 
-        {activeTab === 'sales' && (
-          <SalesExpensesTracker
-            sales={sales}
-            setSales={setSales}
-            expenses={expenses}
-            setExpenses={setExpenses}
-          />
-        )}
+            {activeTab === 'sales' && (
+              <SalesExpensesTracker
+                sales={sales}
+                setSales={setSales}
+                expenses={expenses}
+                setExpenses={setExpenses}
+              />
+            )}
 
-        {activeTab === 'customers' && (
-          <CustomersDebtsManager
-            profile={profile}
-            customers={customers}
-            setCustomers={setCustomers}
-            debts={debts}
-            setDebts={setDebts}
-          />
-        )}
+            {activeTab === 'customers' && (
+              <CustomersDebtsManager
+                profile={profile}
+                customers={customers}
+                setCustomers={setCustomers}
+                debts={debts}
+                setDebts={setDebts}
+              />
+            )}
 
-        {activeTab === 'products' && (
-          <ProductsCatalog products={products} setProducts={setProducts} />
-        )}
+            {activeTab === 'products' && (
+              <ProductsCatalog products={products} setProducts={setProducts} />
+            )}
 
-        {activeTab === 'settings' && (
-          <BusinessSettings
-            profile={profile}
-            setProfile={setProfile}
-            onResetDemoData={handleResetDemoData}
-          />
+            {activeTab === 'settings' && (
+              <BusinessSettings
+                profile={profile}
+                setProfile={setProfile}
+                onResetDemoData={handleResetDemoData}
+              />
+            )}
+          </>
         )}
       </main>
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleTabChange}
         onQuickAddSale={() => setActiveTab('assistant')}
+        isAdmin={isAdmin}
+        onOpenAdminModal={() => setIsAdminModalOpen(true)}
+        onLogoutAdmin={handleAdminLogout}
+      />
+
+      {/* Admin Authentication Passcode Modal */}
+      <AdminAuthModal
+        isOpen={isAdminModalOpen}
+        onClose={() => setIsAdminModalOpen(false)}
+        onLoginSuccess={handleAdminLoginSuccess}
       />
 
       {/* Modals */}
