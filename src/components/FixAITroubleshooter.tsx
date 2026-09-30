@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BusinessProfile, ChatMessage, DeviceCategory, Manufacturer, SafetyLevel, CaseTicket, TechSolution } from '../types';
 import { INITIAL_TECH_SOLUTIONS } from '../data/initialData';
-import { getAccessStatus } from '../utils/subscriptionManager';
+import { getAccessStatus, consumeDiagnosticToken, isDeepDiagnostic, addBonusTokens } from '../utils/subscriptionManager';
 import {
   Bot,
   Send,
@@ -42,6 +42,8 @@ import {
   Paperclip,
   ChevronDown,
   ChevronUp,
+  Zap,
+  Share2,
 } from 'lucide-react';
 
 interface FixAITroubleshooterProps {
@@ -147,6 +149,10 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
   const [custLoc, setCustLoc] = useState('Kampala');
   const [bookingType, setBookingType] = useState<'Remote Support' | 'Onsite Technician Visit' | 'Shop Repair Drop-off'>('Remote Support');
 
+  // Diagnostic Token States
+  const [showTokenDepletedModal, setShowTokenDepletedModal] = useState(false);
+  const [tokenNotice, setTokenNotice] = useState<string | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -251,18 +257,22 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
   };
 
   const handleSend = async (customPrompt?: string) => {
-    const access = getAccessStatus();
-    if (access.isLocked) {
-      if (onOpenSubscriptionModal) {
-        onOpenSubscriptionModal();
-      } else {
-        alert('🔒 3-Day Free Trial Expired!\n\nPlease activate 10,000 UGX/week, 20,000 UGX/month, or $5 USD Card package to continue using MosesTech Fix AI.');
-      }
+    const promptToSend = customPrompt || input;
+    if ((!promptToSend.trim() && !uploadedImageBase64) || isLoading) return;
+
+    // Check Diagnostic Depth & Token Balance
+    const isDeep = isDeepDiagnostic(promptToSend, !!uploadedImageBase64);
+    const tokenResult = consumeDiagnosticToken(isDeep);
+
+    if (!tokenResult.allowed) {
+      setShowTokenDepletedModal(true);
       return;
     }
 
-    const promptToSend = customPrompt || input;
-    if ((!promptToSend.trim() && !uploadedImageBase64) || isLoading) return;
+    if (tokenResult.wasDeep && !tokenResult.isPaid) {
+      setTokenNotice(`⚡ 1 Diagnostic Token used for Deep Hardware Analysis (${tokenResult.tokensRemaining} tokens remaining)`);
+      setTimeout(() => setTokenNotice(null), 5000);
+    }
 
     // Detect client-side safety level & knowledge base solution match
     const detectedSafety = analyzeSafetyLevel(promptToSend);
@@ -669,19 +679,30 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
               ))}
             </div>
 
-            {/* Trial / Lock Badge */}
+            {/* Diagnostic Token & Plan Status Badge */}
             {(() => {
               const access = getAccessStatus();
               return (
-                <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 pt-2">
-                  <span>✨ 3-Day Free Trial Active</span>
-                  <span>•</span>
+                <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-2 gap-2">
+                  <div className="flex items-center space-x-2">
+                    {access.isPaid ? (
+                      <span className="text-emerald-500 font-extrabold flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5" /> Pro Member (Unlimited Diagnostics)
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 font-semibold text-slate-300">
+                        <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                        <strong className="text-amber-400">{access.tokensRemaining} Diagnostic Tokens Left</strong>
+                        <span className="text-slate-400 hidden sm:inline">• Easy Questions Always Free!</span>
+                      </span>
+                    )}
+                  </div>
                   <button
                     type="button"
                     onClick={onOpenSubscriptionModal}
-                    className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+                    className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline flex items-center gap-1"
                   >
-                    View $5/mo & MoMo Plans
+                    {access.isPaid ? 'Manage Pro Plan' : 'Get Unlimited Tokens ($7 / UGX 26,000) →'}
                   </button>
                 </div>
               );
@@ -875,6 +896,14 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
           >
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {/* Token Usage Notification Toast */}
+      {tokenNotice && (
+        <div className="px-4 py-2 bg-emerald-950/80 border-t border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center justify-center gap-2 animate-fade-in">
+          <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+          <span>{tokenNotice}</span>
         </div>
       )}
 
@@ -1108,6 +1137,75 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
                   <span>MTN WhatsApp (0789218570)</span>
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Token Depleted Modal */}
+      {showTokenDepletedModal && (
+        <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 border border-amber-500/40 shadow-2xl space-y-4">
+            <div className="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-2xl flex items-center justify-center mx-auto border border-amber-500/20">
+              <Zap className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-1">
+              <h3 className="text-lg font-black text-slate-900 dark:text-white">
+                Free Diagnostic Tokens Depleted
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                You've used all 5 complimentary deep hardware diagnostic tokens.
+              </p>
+            </div>
+
+            <div className="bg-slate-50 dark:bg-slate-800/80 rounded-2xl p-3.5 border border-slate-200 dark:border-slate-700/80 space-y-2 text-xs">
+              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold">
+                <Check className="w-4 h-4" />
+                <span>Quick & Easy Questions are STILL 100% Free!</span>
+              </div>
+              <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
+                You can ask simple questions anytime. To unlock unlimited deep motherboard, BSOD, photo camera inspection & 1-on-1 technician triage with Moses, upgrade below:
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowTokenDepletedModal(false);
+                  if (onOpenSubscriptionModal) onOpenSubscriptionModal();
+                }}
+                className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition active:scale-95"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Upgrade to Pro Unlimited ($7 / UGX 26,000)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  addBonusTokens(1);
+                  setShowTokenDepletedModal(false);
+                  window.open(
+                    'https://wa.me/?text=Hello!%20Check%20out%20MosesTech%20Fix%20AI%20for%20smart%20laptop%20and%20printer%20troubleshooting:%20https://mosestechfixai.mwesigwamoses859.workers.dev',
+                    '_blank'
+                  );
+                  alert('🎉 1 Bonus Diagnostic Token added for sharing!');
+                }}
+                className="w-full py-2.5 px-4 bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-teal-800 dark:text-teal-300 border border-teal-300 dark:border-teal-700 font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition"
+              >
+                <Share2 className="w-4 h-4 text-emerald-500" />
+                <span>Share on WhatsApp (+1 Bonus Token)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowTokenDepletedModal(false)}
+                className="w-full py-2 text-center text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+              >
+                Close & Ask Easy Question
+              </button>
             </div>
           </div>
         </div>

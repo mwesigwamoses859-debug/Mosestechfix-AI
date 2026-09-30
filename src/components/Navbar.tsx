@@ -256,29 +256,25 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            {/* Access Status & Subscription Button ($5 USD / UGX) */}
+            {/* Access Status & Subscription Button (Diagnostic Tokens / Pro) */}
             <button
               onClick={onOpenSubscription}
               className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center space-x-1.5 shadow-sm transition-all hover:scale-105 ${
-                access.isLocked
-                  ? 'bg-red-600 hover:bg-red-500 text-white animate-pulse'
-                  : access.isPaid
+                access.isPaid
                   ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black'
+                  : access.tokensRemaining === 0
+                  ? 'bg-amber-600 hover:bg-amber-500 text-white animate-pulse'
                   : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white'
               }`}
               title={access.statusMessage}
             >
-              {access.isLocked ? (
-                <Lock className="w-3.5 h-3.5 text-white shrink-0" />
-              ) : (
-                <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              )}
+              <Sparkles className="w-3.5 h-3.5 shrink-0" />
               <span>
-                {access.isLocked
-                  ? 'Unlock'
-                  : access.isPaid
-                  ? 'VIP Plan'
-                  : '$5/mo Plan'}
+                {access.isPaid
+                  ? 'PRO Active'
+                  : access.tokensRemaining === 0
+                  ? '⚡ 0 Tokens'
+                  : `⚡ ${access.tokensRemaining} Tokens`}
               </span>
             </button>
           </div>
