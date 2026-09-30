@@ -45,14 +45,19 @@ import { ProductsCatalog } from './components/ProductsCatalog';
 import { KnowledgeBaseModal } from './components/KnowledgeBaseModal';
 import { BusinessSettings } from './components/BusinessSettings';
 import { SubscriptionModal } from './components/SubscriptionModal';
-import { WebsiteEmbedModal } from './components/WebsiteEmbedModal';
 import { AdminAuthModal } from './components/AdminAuthModal';
+import { TicketTrackerModal } from './components/TicketTrackerModal';
+import { AppDownloadModal } from './components/AppDownloadModal';
+import { ErrorCodeScannerModal } from './components/ErrorCodeScannerModal';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('assistant');
   const [isKnowledgeOpen, setIsKnowledgeOpen] = useState(false);
   const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
   const [isEmbedModalOpen, setIsEmbedModalOpen] = useState(false);
+  const [isTicketTrackerOpen, setIsTicketTrackerOpen] = useState(false);
+  const [isAppDownloadOpen, setIsAppDownloadOpen] = useState(false);
+  const [isErrorCodeScannerOpen, setIsErrorCodeScannerOpen] = useState(false);
   const [aiRequestCount, setAiRequestCount] = useState(14);
   const [sharedDoc, setSharedDoc] = useState<BusinessDocument | null>(null);
 
@@ -223,6 +228,57 @@ export default function App() {
     setActiveTab('assistant');
   };
 
+  const handleSelectErrorCode = (prompt: string, category: DeviceCategory, brand: Manufacturer) => {
+    setActiveTab('assistant');
+    setIsErrorCodeScannerOpen(false);
+
+    const userMsg: ChatMessage = {
+      id: Date.now().toString(),
+      sender: 'user',
+      text: prompt,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setMessages((prev) => [...prev, userMsg]);
+    setAiRequestCount((prev) => prev + 1);
+
+    fetch('/api/ai/diagnose-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt,
+        deviceCategory: category,
+        manufacturer: brand,
+        history: messages.slice(-4),
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            sender: 'assistant',
+            text: data.text || 'Decoded error successfully.',
+            safetyLevel: 'Amber',
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          },
+        ]);
+      })
+      .catch(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            sender: 'assistant',
+            text: `🛠️ **MosesTech Error Code Decoded: ${prompt}**\n\n• **Hardware:** ${brand} (${category})\n• **Immediate Action:** Disconnect external USB cables, check device RAM/SSD, or reboot into Windows Safe Mode.\n• **Technician Escalation:** Visit Ntinda Shop G-12 or call 0789218570 / 0708262179.`,
+            safetyLevel: 'Amber',
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          },
+        ]);
+      });
+  };
+
   const handleExecuteAIAction = (actionType: string, data: any) => {
     if (actionType === 'BOOK_TECHNICIAN') {
       setActiveTab('tickets');
@@ -265,6 +321,8 @@ export default function App() {
         isAdmin={isAdmin}
         onOpenAdminModal={() => setIsAdminModalOpen(true)}
         onLogoutAdmin={handleAdminLogout}
+        onOpenTicketTracker={() => setIsTicketTrackerOpen(true)}
+        onOpenAppDownload={() => setIsAppDownloadOpen(true)}
       />
 
       {/* Main App Canvas */}
@@ -278,6 +336,7 @@ export default function App() {
             setTickets={setTickets}
             incrementAiUsage={() => setAiRequestCount((prev) => prev + 1)}
             onOpenSubscriptionModal={() => setIsSubscriptionOpen(true)}
+            onOpenErrorCodeScanner={() => setIsErrorCodeScannerOpen(true)}
           />
         )}
 
@@ -358,6 +417,8 @@ export default function App() {
         isAdmin={isAdmin}
         onOpenAdminModal={() => setIsAdminModalOpen(true)}
         onLogoutAdmin={handleAdminLogout}
+        onOpenTicketTracker={() => setIsTicketTrackerOpen(true)}
+        onOpenAppDownload={() => setIsAppDownloadOpen(true)}
       />
 
       {/* Admin Authentication Passcode Modal */}
@@ -365,6 +426,26 @@ export default function App() {
         isOpen={isAdminModalOpen}
         onClose={() => setIsAdminModalOpen(false)}
         onLoginSuccess={handleAdminLoginSuccess}
+      />
+
+      {/* Public Repair Ticket Tracker Modal */}
+      <TicketTrackerModal
+        isOpen={isTicketTrackerOpen}
+        onClose={() => setIsTicketTrackerOpen(false)}
+        tickets={tickets}
+      />
+
+      {/* Mobile App & APK Download Modal */}
+      <AppDownloadModal
+        isOpen={isAppDownloadOpen}
+        onClose={() => setIsAppDownloadOpen(false)}
+      />
+
+      {/* Hardware Error Code & BSOD Quick Scanner Modal */}
+      <ErrorCodeScannerModal
+        isOpen={isErrorCodeScannerOpen}
+        onClose={() => setIsErrorCodeScannerOpen(false)}
+        onSelectErrorCode={handleSelectErrorCode}
       />
 
       {/* Modals */}

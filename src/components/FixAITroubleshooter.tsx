@@ -53,6 +53,7 @@ interface FixAITroubleshooterProps {
   incrementAiUsage: () => void;
   onOpenBookingModal?: (data?: any) => void;
   onOpenSubscriptionModal?: () => void;
+  onOpenErrorCodeScanner?: () => void;
 }
 
 // Utility: Detect safety level based on user input
@@ -113,6 +114,7 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
   incrementAiUsage,
   onOpenBookingModal,
   onOpenSubscriptionModal,
+  onOpenErrorCodeScanner,
 }) => {
   const [input, setInput] = useState('');
   const [selectedDevice, setSelectedDevice] = useState<DeviceCategory>('Windows Laptop');
@@ -124,6 +126,18 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [uploadedImageBase64, setUploadedImageBase64] = useState<string | null>(null);
   const [showHardwarePanel, setShowHardwarePanel] = useState(false);
+  const [isOffline, setIsOffline] = useState(typeof window !== 'undefined' ? !navigator.onLine : false);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Booking Modal State
   const [bookingTicketData, setBookingTicketData] = useState<any | null>(null);
@@ -503,6 +517,13 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
 
         {/* Action Controls: New Chat, Safety Level & Hotline */}
         <div className="flex items-center space-x-2">
+          {/* Offline Mode Indicator */}
+          {isOffline && (
+            <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1 shadow-2xs">
+              <span>⚡ Offline Active</span>
+            </span>
+          )}
+
           {/* Live Safety Level Indicator */}
           <span className={`hidden sm:flex text-[10px] font-black uppercase px-2.5 py-1 rounded-full items-center gap-1 border ${
             activeSafetyLevel === 'Green'
@@ -866,7 +887,7 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
           }}
           className="relative max-w-3xl mx-auto flex items-center bg-slate-100 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700/80 px-2 py-1.5 focus-within:ring-2 focus-within:ring-emerald-500 transition-all shadow-sm"
         >
-          {/* File / Camera Upload */}
+          {/* File / Screenshot Upload */}
           <input
             type="file"
             ref={fileInputRef}
@@ -882,6 +903,18 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
           >
             <Paperclip className="w-4 h-4" />
           </button>
+
+          {/* Error Code & BSOD Quick Scanner */}
+          {onOpenErrorCodeScanner && (
+            <button
+              type="button"
+              onClick={onOpenErrorCodeScanner}
+              className="p-2 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 rounded-full transition-colors"
+              title="Scan / Select Windows Blue Screen or Printer Error Code"
+            >
+              <Camera className="w-4 h-4" />
+            </button>
+          )}
 
           {/* Voice Dictation */}
           <button

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Wrench, Ticket, PlusCircle, LayoutDashboard, Menu, FileText, ShoppingBag, DollarSign, Users, Building, X, Globe, Shield, BookOpen, LogOut } from 'lucide-react';
+import { Wrench, Ticket, PlusCircle, LayoutDashboard, Menu, FileText, ShoppingBag, DollarSign, Users, Building, X, Globe, Shield, BookOpen, LogOut, Smartphone, Search } from 'lucide-react';
 
 interface MobileBottomNavProps {
   activeTab: string;
@@ -9,6 +9,8 @@ interface MobileBottomNavProps {
   onOpenAdminModal?: () => void;
   onLogoutAdmin?: () => void;
   onOpenKnowledge?: () => void;
+  onOpenTicketTracker?: () => void;
+  onOpenAppDownload?: () => void;
 }
 
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
@@ -19,6 +21,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   onOpenAdminModal,
   onLogoutAdmin,
   onOpenKnowledge,
+  onOpenTicketTracker,
+  onOpenAppDownload,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -74,6 +78,34 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 <Ticket className="w-4 h-4 text-blue-500 shrink-0" />
                 <span className="truncate">Repair Tickets</span>
               </button>
+
+              {onOpenTicketTracker && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onOpenTicketTracker();
+                  }}
+                  className="p-3 rounded-2xl border flex items-center space-x-2.5 transition-colors bg-blue-50/70 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-bold"
+                >
+                  <Search className="w-4 h-4 text-blue-500 shrink-0" />
+                  <span className="truncate">Track My Ticket</span>
+                </button>
+              )}
+
+              {onOpenAppDownload && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onOpenAppDownload();
+                  }}
+                  className="p-3 rounded-2xl border flex items-center space-x-2.5 transition-colors bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 font-bold"
+                >
+                  <Smartphone className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span className="truncate">Install Mobile App</span>
+                </button>
+              )}
             </div>
 
             {/* Admin-Only Financial & Workshop Modules */}

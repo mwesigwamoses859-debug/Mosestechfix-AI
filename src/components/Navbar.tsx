@@ -18,6 +18,8 @@ import {
   Moon,
   Shield,
   LogOut,
+  Smartphone,
+  Search,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -34,6 +36,8 @@ interface NavbarProps {
   isAdmin?: boolean;
   onOpenAdminModal?: () => void;
   onLogoutAdmin?: () => void;
+  onOpenTicketTracker?: () => void;
+  onOpenAppDownload?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -49,6 +53,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   isAdmin = false,
   onOpenAdminModal,
   onLogoutAdmin,
+  onOpenTicketTracker,
+  onOpenAppDownload,
 }) => {
   const access = getAccessStatus();
 
@@ -183,6 +189,32 @@ export const Navbar: React.FC<NavbarProps> = ({
                 ) : (
                   <Moon className="w-4 h-4 text-slate-700" />
                 )}
+              </button>
+            )}
+
+            {/* Track Repair Ticket (Public Portal) */}
+            {onOpenTicketTracker && (
+              <button
+                type="button"
+                onClick={onOpenTicketTracker}
+                className="px-2.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-bold flex items-center space-x-1 border border-blue-200 dark:border-blue-800 transition-colors shadow-sm"
+                title="Track your computer repair ticket progress"
+              >
+                <Search className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Track Ticket</span>
+              </button>
+            )}
+
+            {/* Install / Download Mobile App */}
+            {onOpenAppDownload && (
+              <button
+                type="button"
+                onClick={onOpenAppDownload}
+                className="px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center space-x-1 border border-emerald-300 dark:border-emerald-800 transition-colors shadow-sm"
+                title="Install or Download Android APK"
+              >
+                <Smartphone className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">Get App</span>
               </button>
             )}
 
