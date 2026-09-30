@@ -31,10 +31,10 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, on
   const isAdminMode = new URLSearchParams(window.location.search).get('admin') === 'activation';
 
   const plans = useMemo<SubscriptionPlan[]>(() => [
-    { id: 'weekly_access', name: 'Weekly Pass', monthlyUGX: 10000, priceUSD: 3, periodText: '/7 days', aiRequestLimit: 'Unlimited', badge: 'POPULAR', features: ['7 days AI access', 'Photo & error-code analysis', 'Guided troubleshooting'] },
-    { id: 'monthly_full', name: 'Advanced Pro', monthlyUGX: 20000, priceUSD: 5, periodText: '/30 days', aiRequestLimit: 'Unlimited', isPopular: true, badge: 'MOST POPULAR — $5/MO', features: ['30 days unlimited AI access', 'Gemini 2.5 Flash & Pro Reasoning', 'Photo hardware & BSOD diagnostics', 'Hands-free Voice repair assistant', 'PDF Invoicing & Debt Management', 'Priority WhatsApp support'] },
-    { id: 'remote_pass', name: 'Remote Tech Pass', monthlyUGX: 25000, priceUSD: 7, periodText: '/30 days', aiRequestLimit: 50, features: ['50 AI diagnostics', 'One remote support session', 'WhatsApp case dispatch'] },
-    { id: 'business_it', name: 'Business IT Care', monthlyUGX: 85000, priceUSD: 25, periodText: '/30 days', aiRequestLimit: 250, features: ['250 AI diagnostics', 'Two onsite technician visits', 'Support for up to 10 devices'] },
+    { id: 'weekly_access', name: 'Weekly Pass', monthlyUGX: 12000, priceUSD: 3.5, periodText: '/7 days', aiRequestLimit: 'Unlimited', badge: 'POPULAR', features: ['7 days AI access', 'Photo & error-code analysis', 'Guided troubleshooting'] },
+    { id: 'monthly_full', name: 'Advanced Pro', monthlyUGX: 26000, priceUSD: 7, periodText: '/30 days', aiRequestLimit: 'Unlimited', isPopular: true, badge: 'MOST POPULAR — $7/MO', features: ['30 days unlimited AI access', 'Gemini 2.5 Flash & Pro Reasoning', 'Photo hardware & BSOD diagnostics', 'Hands-free Voice repair assistant', 'PDF Diagnostic Reports & Invoicing', 'Priority WhatsApp support'] },
+    { id: 'remote_pass', name: 'Remote Tech Pass', monthlyUGX: 35000, priceUSD: 10, periodText: '/30 days', aiRequestLimit: 50, features: ['50 AI diagnostics', 'One direct remote support session', 'WhatsApp case dispatch'] },
+    { id: 'business_it', name: 'Business IT Care', monthlyUGX: 95000, priceUSD: 27, periodText: '/30 days', aiRequestLimit: 250, features: ['250 AI diagnostics', 'Two onsite technician visits', 'Support for up to 10 devices'] },
   ], []);
 
   if (!isOpen) return null;
@@ -58,7 +58,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, on
           customerEmail: customerEmail.trim() || undefined,
           deviceId,
           planId: 'monthly_full',
-          amountUSD: 5,
+          amountUSD: 7,
         }),
       });
 
@@ -71,11 +71,11 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, on
         // Fallback for test/development mode
         saveVerifiedAccess({
           accessToken: data.activationCode,
-          planName: 'Advanced Pro ($5/mo)',
+          planName: 'Advanced Pro ($7/mo)',
           expiresAt: data.expiresAt,
         });
         setAccessStatus(getAccessStatus());
-        setMessage({ type: 'success', text: 'Advanced Plan ($5 USD/mo) activated successfully!' });
+        setMessage({ type: 'success', text: 'Advanced Plan ($7 USD/mo) activated successfully!' });
       }
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message || 'Payment system unavailable. You can also use Mobile Money.' });
@@ -202,7 +202,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, on
           </button>
         </div>
 
-        {/* TAB 1: $5 USD / MONTH INTERNATIONAL STRIPE CHECKOUT */}
+        {/* TAB 1: $7 USD / MONTH INTERNATIONAL STRIPE CHECKOUT */}
         {paymentMethodTab === 'card_usd' && (
           <div className="mb-6 bg-gradient-to-br from-emerald-950/60 via-slate-950 to-slate-900 border-2 border-emerald-500/80 rounded-2xl p-6 shadow-xl space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -214,8 +214,8 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, on
                 <p className="text-xs text-slate-300 mt-1">Automatic recurring card billing or Google Pay. Cancel anytime.</p>
               </div>
               <div className="text-left sm:text-right">
-                <div className="text-3xl font-black text-emerald-400">\$5.00 <span className="text-xs font-normal text-slate-400">USD / month</span></div>
-                <div className="text-[11px] text-slate-400">(\~20,000 UGX equivalent)</div>
+                <div className="text-3xl font-black text-emerald-400">$7.00 <span className="text-xs font-normal text-slate-400">USD / month</span></div>
+                <div className="text-[11px] text-slate-400">(~26,000 UGX equivalent)</div>
               </div>
             </div>
 
@@ -237,7 +237,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, on
               <div className="space-y-2 text-xs">
                 <div className="flex items-center gap-2 text-slate-200">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span><strong>PDF Invoice & Quotations</strong>: Instant branded customer bills</span>
+                  <span><strong>PDF Diagnostic Certificates</strong>: Downloadable repair proof</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-200">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -245,7 +245,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, on
                 </div>
                 <div className="flex items-center gap-2 text-slate-200">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span><strong>Priority Helpdesk Escalation</strong> via WhatsApp (+256708262179)</span>
+                  <span><strong>Priority Helpdesk Escalation</strong> via WhatsApp (+256789218570)</span>
                 </div>
               </div>
             </div>
@@ -265,7 +265,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, on
                 className="px-6 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold rounded-xl flex items-center justify-center gap-2 shadow-lg transition active:scale-95 disabled:opacity-50"
               >
                 <CreditCard className="w-4 h-4" />
-                <span>{isProcessingStripe ? 'Opening Checkout...' : 'Pay \$5.00 / Month with Card'}</span>
+                <span>{isProcessingStripe ? 'Opening Checkout...' : 'Pay $7.00 / Month with Card'}</span>
               </button>
             </div>
             

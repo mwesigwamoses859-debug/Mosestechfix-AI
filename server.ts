@@ -104,10 +104,10 @@ app.get('/api/health', (req, res) => {
 type ManualPlan = { name: string; amountUGX: number; durationDays: number };
 
 const MANUAL_PLANS: Record<string, ManualPlan> = {
-  weekly_access: { name: '1 Week Full AI Access', amountUGX: 10000, durationDays: 7 },
-  monthly_full: { name: '1 Month Full AI Access', amountUGX: 20000, durationDays: 30 },
-  remote_pass: { name: 'Remote Tech Pass', amountUGX: 25000, durationDays: 30 },
-  business_it: { name: 'Small Business IT Care', amountUGX: 85000, durationDays: 30 },
+  weekly_access: { name: '1 Week Full AI Access', amountUGX: 12000, durationDays: 7 },
+  monthly_full: { name: '1 Month Full AI Access', amountUGX: 26000, durationDays: 30 },
+  remote_pass: { name: 'Remote Tech Pass', amountUGX: 35000, durationDays: 30 },
+  business_it: { name: 'Small Business IT Care', amountUGX: 95000, durationDays: 30 },
 };
 
 function signingSecret() {
@@ -186,7 +186,7 @@ app.post('/api/subscriptions/manual/activate', (req, res) => {
   }
 });
 
-// Stripe $5 USD / Month Checkout Session Creation Endpoint
+// Stripe $7 USD / Month Checkout Session Creation Endpoint
 app.post('/api/subscriptions/stripe/create-checkout', async (req, res) => {
   try {
     const { customerEmail, deviceId } = req.body || {};
@@ -203,7 +203,7 @@ app.post('/api/subscriptions/stripe/create-checkout', async (req, res) => {
       params.append('line_items[0][price_data][currency]', 'usd');
       params.append('line_items[0][price_data][product_data][name]', 'MosesTech Fix AI — Advanced Technician Tier');
       params.append('line_items[0][price_data][product_data][description]', 'Unlimited AI hardware diagnostics, BSOD inspection, voice guidance & invoicing');
-      params.append('line_items[0][price_data][unit_amount]', '500'); // $5.00 USD
+      params.append('line_items[0][price_data][unit_amount]', '700'); // $7.00 USD
       params.append('line_items[0][price_data][recurring][interval]', 'month');
       params.append('line_items[0][quantity]', '1');
       params.append('client_reference_id', deviceId.trim());
