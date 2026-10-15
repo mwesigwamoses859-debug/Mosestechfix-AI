@@ -151,9 +151,17 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     incrementAiUsage();
 
     try {
+      const assistantMsgId = (Date.now() + 1).toString();
+      let assistantText = '';
+      let structuredAction: any = null;
+      let groundingData: any = null;
+
       const res = await fetch('/api/ai/assistant', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream, application/json',
+        },
         body: JSON.stringify({
           prompt: promptText,
           businessContext: profile,
@@ -161,36 +169,98 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           useSearch,
           useMaps,
           enableThinking,
+          stream: true,
         }),
       });
 
-      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(`Server returned status ${res.status}`);
+      }
 
-      let assistantText = data.text || 'I could not generate a response.';
-      let structuredAction: any = null;
+      const isStream = res.headers.get('content-type')?.includes('text/event-stream');
+      if (isStream && res.body) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMsgId,
+            sender: 'assistant',
+            text: 'Thinking...',
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          },
+        ]);
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('data: ')) {
+              const dataStr = trimmed.slice(6).trim();
+              if (dataStr === '[DONE]') break;
+              try {
+                const parsed = JSON.parse(dataStr);
+                if (parsed.text) {
+                  assistantText += parsed.text;
+                  const cleanDisplay = assistantText
+                    .replace(/```json[\s\S]*?```/g, '')
+                    .replace(/```json[\s\S]*$/g, '')
+                    .trim();
+
+                  setMessages((prev) =>
+                    prev.map((msg) =>
+                      msg.id === assistantMsgId ? { ...msg, text: cleanDisplay || '...' } : msg
+                    )
+                  );
+                }
+              } catch {
+                // ignore partial json
+              }
+            }
+          }
+        }
+      } else {
+        const data = await res.json();
+        assistantText = data.text || 'I could not generate a response.';
+        groundingData = data.grounding;
+      }
 
       // Extract JSON trigger code block if present
       const jsonMatch = assistantText.match(/```json\s*([\s\S]*?)\s*```/);
       if (jsonMatch && jsonMatch[1]) {
         try {
           structuredAction = JSON.parse(jsonMatch[1]);
-          // Clean the code block from visible message
           assistantText = assistantText.replace(/```json\s*[\s\S]*?\s*```/g, '').trim();
         } catch (e) {
           console.log('JSON parse error:', e);
         }
+      } else {
+        assistantText = assistantText.replace(/```json[\s\S]*$/g, '').trim();
       }
 
       const botMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+        id: assistantMsgId,
         sender: 'assistant',
-        text: assistantText,
+        text: assistantText || 'I processed your request.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         structuredAction,
-        grounding: data.grounding,
+        grounding: groundingData,
       };
 
-      setMessages((prev) => [...prev, botMsg]);
+      setMessages((prev) => {
+        const exists = prev.some((m) => m.id === assistantMsgId);
+        if (exists) {
+          return prev.map((m) => (m.id === assistantMsgId ? botMsg : m));
+        }
+        return [...prev, botMsg];
+      });
     } catch (err: any) {
       setMessages((prev) => [
         ...prev,

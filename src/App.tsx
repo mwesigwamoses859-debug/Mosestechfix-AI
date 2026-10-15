@@ -52,6 +52,7 @@ import { TicketTrackerModal } from './components/TicketTrackerModal';
 import { AppDownloadModal } from './components/AppDownloadModal';
 import { ErrorCodeScannerModal } from './components/ErrorCodeScannerModal';
 import { WebsiteEmbedModal } from './components/WebsiteEmbedModal';
+import { PromoteShareModal } from './components/PromoteShareModal';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('assistant');
@@ -61,6 +62,7 @@ export default function App() {
   const [isTicketTrackerOpen, setIsTicketTrackerOpen] = useState(false);
   const [isAppDownloadOpen, setIsAppDownloadOpen] = useState(false);
   const [isErrorCodeScannerOpen, setIsErrorCodeScannerOpen] = useState(false);
+  const [isPromoteModalOpen, setIsPromoteModalOpen] = useState(false);
   const [aiRequestCount, setAiRequestCount] = useState(14);
   const [sharedDoc, setSharedDoc] = useState<BusinessDocument | null>(null);
 

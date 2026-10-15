@@ -7,8 +7,8 @@ import crypto from 'crypto';
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = typeof import.meta !== 'undefined' && typeof import.meta.url === 'string' && import.meta.url.startsWith('file:') ? fileURLToPath(import.meta.url) : '';
+const __dirname = __filename ? path.dirname(__filename) : '';
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
@@ -17,7 +17,7 @@ app.use(express.json({ limit: '10mb' }));
 
 // Lazy init Gemini AI
 function getGenAI() {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || ((app as any).locals?.runtimeEnv && (app as any).locals.runtimeEnv.GEMINI_API_KEY);
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY environment variable is not configured.');
   }
@@ -94,6 +94,68 @@ function extractGroundingMetadata(candidate: any) {
   const searchQueries = metadata.webSearchQueries || [];
 
   return { webSources, mapSources, searchQueries };
+}
+
+// Fast Low-Latency AI Execution with Automatic Fallbacks
+function prepareConfigForModel(baseConfig: any, model: string, enableThinking: boolean) {
+  const cfg = { ...baseConfig };
+  if (model.includes('1.5')) {
+    delete cfg.thinkingConfig;
+  } else if (model.includes('3.') || model.includes('gemini-3')) {
+    if (enableThinking) {
+      cfg.thinkingConfig = { thinkingLevel: ThinkingLevel.HIGH };
+    } else {
+      // Use low thinking for ultra-fast response on Gemini 3.x
+      cfg.thinkingConfig = { thinkingLevel: ThinkingLevel.LOW };
+    }
+  } else if (model.includes('2.5') || model.includes('2.0')) {
+    if (enableThinking) {
+      cfg.thinkingConfig = { thinkingLevel: ThinkingLevel.HIGH };
+    } else {
+      cfg.thinkingConfig = { thinkingBudget: 0 };
+    }
+  }
+  return cfg;
+}
+
+// Fast Low-Latency AI Execution with Automatic Fallbacks
+async function executeGenAI(
+  ai: any,
+  contents: any,
+  baseConfig: any,
+  isStream: boolean,
+  enableThinking: boolean = false
+) {
+  // Ultra-fast model priority: gemini-1.5-flash (instant, 0 thinking) -> gemini-2.5-flash-lite -> gemini-3.6-flash -> gemini-2.5-flash
+  const models = enableThinking
+    ? ['gemini-3.1-pro-preview', 'gemini-2.5-pro', 'gemini-3.6-flash']
+    : ['gemini-1.5-flash', 'gemini-2.5-flash-lite', 'gemini-3.6-flash', 'gemini-2.5-flash'];
+
+  let lastError: any = null;
+  for (const model of models) {
+    try {
+      const config = prepareConfigForModel(baseConfig, model, enableThinking);
+      if (isStream) {
+        const stream = await ai.models.generateContentStream({
+          model,
+          contents,
+          config,
+        });
+        return { type: 'stream' as const, stream, model };
+      } else {
+        const response = await ai.models.generateContent({
+          model,
+          contents,
+          config,
+        });
+        return { type: 'response' as const, response, model };
+      }
+    } catch (err: any) {
+      console.warn(`[GenAI] Model ${model} failed (${err.message}). Trying fallback model...`);
+      lastError = err;
+    }
+  }
+  throw lastError || new Error('All Gemini models failed');
 }
 
 // API Routes
@@ -279,7 +341,7 @@ app.post('/api/subscriptions/stripe/webhook', async (req, res) => {
 // AI Diagnostic & Troubleshooting Chat Endpoint
 app.post('/api/ai/diagnose-chat', async (req, res) => {
   try {
-    const { prompt, deviceCategory, manufacturer, model, history, useSearch, useMaps, enableThinking } = req.body;
+    const { prompt, deviceCategory, manufacturer, model, history, useSearch, useMaps, enableThinking, stream } = req.body;
     if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
 
     const ai = getGenAI();
@@ -327,15 +389,17 @@ Respond with helpful text and include a JSON block:
 \`\`\`
 `;
 
-    let selectedModel = 'gemini-3.6-flash';
     const config: any = {
       systemInstruction: MOSESTECH_FIX_AI_SYSTEM_INSTRUCTION,
-      temperature: 0.6,
+      temperature: 0.4,
+      maxOutputTokens: 600,
     };
 
     if (enableThinking) {
-      selectedModel = 'gemini-3.1-pro-preview';
       config.thinkingConfig = { thinkingLevel: ThinkingLevel.HIGH };
+    } else {
+      // Eliminate hidden reasoning delay for instant diagnostic response
+      config.thinkingConfig = { thinkingBudget: 0 };
     }
 
     if (useSearch) {
@@ -344,18 +408,41 @@ Respond with helpful text and include a JSON block:
       config.tools = [{ googleMaps: {} }];
     }
 
-    const response = await ai.models.generateContent({
-      model: selectedModel,
-      contents: contentPrompt,
-      config,
-    });
+    const wantsStream = stream === true || req.headers.accept?.includes('text/event-stream');
 
-    const grounding = extractGroundingMetadata(response.candidates?.[0]);
+    if (wantsStream) {
+      res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-transform');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Accel-Buffering', 'no');
+      if (typeof (res as any).flushHeaders === 'function') {
+        (res as any).flushHeaders();
+      }
 
-    res.json({ text: response.text, grounding });
+      const result = await executeGenAI(ai, contentPrompt, config, true, !!enableThinking);
+      for await (const chunk of result.stream) {
+        if (chunk.text) {
+          res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
+          if (typeof (res as any).flush === 'function') {
+            (res as any).flush();
+          }
+        }
+      }
+      res.write('data: [DONE]\n\n');
+      return res.end();
+    } else {
+      const result = await executeGenAI(ai, contentPrompt, config, false, !!enableThinking);
+      const grounding = extractGroundingMetadata(result.response?.candidates?.[0]);
+      return res.json({ text: result.response.text, grounding });
+    }
   } catch (err: any) {
     console.error('Diagnose Chat Error:', err);
-    res.status(500).json({ error: err.message || 'Diagnostic failed' });
+    if (!res.headersSent) {
+      res.status(500).json({ error: err.message || 'Diagnostic failed' });
+    } else {
+      res.write(`data: ${JSON.stringify({ error: err.message || 'Diagnostic failed' })}\n\n`);
+      res.end();
+    }
   }
 });
 
@@ -403,9 +490,16 @@ Respond with diagnosis text and include a JSON block:
 \`\`\`
 `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
-      contents: [
+    const config: any = {
+      systemInstruction: MOSESTECH_FIX_AI_SYSTEM_INSTRUCTION,
+      temperature: 0.4,
+      maxOutputTokens: 500,
+      thinkingConfig: { thinkingBudget: 0 },
+    };
+
+    const result = await executeGenAI(
+      ai,
+      [
         {
           inlineData: {
             mimeType,
@@ -414,13 +508,12 @@ Respond with diagnosis text and include a JSON block:
         },
         promptText,
       ],
-      config: {
-        systemInstruction: MOSESTECH_FIX_AI_SYSTEM_INSTRUCTION,
-        temperature: 0.5,
-      },
-    });
+      config,
+      false,
+      false
+    );
 
-    res.json({ text: response.text });
+    res.json({ text: result.response.text });
   } catch (err: any) {
     console.error('Diagnose Image Error:', err);
     res.status(500).json({ error: err.message || 'Image diagnostic failed' });
@@ -430,7 +523,7 @@ Respond with diagnosis text and include a JSON block:
 // AI Assistant Chat & General Business Route (Multi-turn + Grounding + Thinking)
 app.post('/api/ai/assistant', async (req, res) => {
   try {
-    const { prompt, businessContext, history, useSearch, useMaps, enableThinking } = req.body;
+    const { prompt, businessContext, history, useSearch, useMaps, enableThinking, stream } = req.body;
 
     if (!prompt) {
       return res.status(400).json({ error: 'Prompt is required' });
@@ -467,15 +560,16 @@ JSON block structure:
 \`\`\`
 `;
 
-    let selectedModel = 'gemini-3.6-flash';
     const config: any = {
       systemInstruction: MOSESTECH_FIX_AI_SYSTEM_INSTRUCTION,
-      temperature: 0.7,
+      temperature: 0.5,
+      maxOutputTokens: 600,
     };
 
     if (enableThinking) {
-      selectedModel = 'gemini-3.1-pro-preview';
       config.thinkingConfig = { thinkingLevel: ThinkingLevel.HIGH };
+    } else {
+      config.thinkingConfig = { thinkingBudget: 0 };
     }
 
     if (useSearch) {
@@ -484,18 +578,41 @@ JSON block structure:
       config.tools = [{ googleMaps: {} }];
     }
 
-    const response = await ai.models.generateContent({
-      model: selectedModel,
-      contents: fullPrompt,
-      config,
-    });
+    const wantsStream = stream === true || req.headers.accept?.includes('text/event-stream');
 
-    const grounding = extractGroundingMetadata(response.candidates?.[0]);
+    if (wantsStream) {
+      res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-transform');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Accel-Buffering', 'no');
+      if (typeof (res as any).flushHeaders === 'function') {
+        (res as any).flushHeaders();
+      }
 
-    res.json({ text: response.text, grounding });
+      const result = await executeGenAI(ai, fullPrompt, config, true, !!enableThinking);
+      for await (const chunk of result.stream) {
+        if (chunk.text) {
+          res.write(`data: ${JSON.stringify({ text: chunk.text })}\n\n`);
+          if (typeof (res as any).flush === 'function') {
+            (res as any).flush();
+          }
+        }
+      }
+      res.write('data: [DONE]\n\n');
+      return res.end();
+    } else {
+      const result = await executeGenAI(ai, fullPrompt, config, false, !!enableThinking);
+      const grounding = extractGroundingMetadata(result.response?.candidates?.[0]);
+      return res.json({ text: result.response.text, grounding });
+    }
   } catch (err: any) {
     console.error('Gemini Assistant Error:', err);
-    res.status(500).json({ error: err.message || 'Failed to process AI request' });
+    if (!res.headersSent) {
+      res.status(500).json({ error: err.message || 'Failed to process AI request' });
+    } else {
+      res.write(`data: ${JSON.stringify({ error: err.message || 'Failed to process AI request' })}\n\n`);
+      res.end();
+    }
   }
 });
 
@@ -828,4 +945,11 @@ async function startServer() {
   });
 }
 
-startServer();
+// Only start the server when run directly (e.g. node server.js or tsx server.ts)
+const entryFile = process.argv?.[1]?.replace(/\\/g, '/').split('/').pop();
+if (entryFile === 'server.ts' || entryFile === 'server.js') {
+  startServer();
+}
+
+export default app;
+

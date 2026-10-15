@@ -295,7 +295,11 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
     setUploadedImageBase64(null);
 
     try {
-      let res;
+      let assistantText = '';
+      let structuredAction: any = null;
+      let safetyLevel: SafetyLevel = detectedSafety;
+      const assistantMsgId = (Date.now() + 1).toString();
+
       if (currentImage) {
         res = await fetch('/api/ai/diagnose-image', {
           method: 'POST',
@@ -305,28 +309,90 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
             userNotes: promptToSend,
           }),
         });
+
+        if (!res.ok) {
+          throw new Error(`Server returned status ${res.status}`);
+        }
+        const data = await res.json();
+        assistantText = data.text || 'I could not process the diagnosis.';
       } else {
+        // Request real-time streaming for instant response
         res = await fetch('/api/ai/diagnose-chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'text/event-stream, application/json',
+          },
           body: JSON.stringify({
             prompt: promptToSend,
             deviceCategory: selectedDevice,
             manufacturer: selectedBrand,
             model: selectedModel,
             history: messages.slice(-6),
+            stream: true,
           }),
         });
-      }
 
-      if (!res.ok) {
-        throw new Error(`Server returned status ${res.status}`);
-      }
+        if (!res.ok) {
+          throw new Error(`Server returned status ${res.status}`);
+        }
 
-      const data = await res.json();
-      let assistantText = data.text || 'I could not process the diagnosis.';
-      let structuredAction: any = null;
-      let safetyLevel: SafetyLevel = detectedSafety;
+        const isStream = res.headers.get('content-type')?.includes('text/event-stream');
+        if (isStream && res.body) {
+          // Immediately show typing indicator bubble
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: assistantMsgId,
+              sender: 'assistant',
+              text: 'Thinking...',
+              safetyLevel,
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            },
+          ]);
+
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (trimmed.startsWith('data: ')) {
+                const dataStr = trimmed.slice(6).trim();
+                if (dataStr === '[DONE]') break;
+                try {
+                  const parsed = JSON.parse(dataStr);
+                  if (parsed.text) {
+                    assistantText += parsed.text;
+                    const cleanDisplay = assistantText
+                      .replace(/```json[\s\S]*?```/g, '')
+                      .replace(/```json[\s\S]*$/g, '')
+                      .trim();
+
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === assistantMsgId ? { ...msg, text: cleanDisplay || '...' } : msg
+                      )
+                    );
+                  }
+                } catch {
+                  // ignore partial JSON chunk
+                }
+              }
+            }
+          }
+        } else {
+          const data = await res.json();
+          assistantText = data.text || 'I could not process the diagnosis.';
+        }
+      }
 
       // Parse JSON block if present
       const jsonMatch = assistantText.match(/```json\s*([\s\S]*?)\s*```/);
@@ -341,6 +407,8 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
         } catch (e) {
           console.error('Failed to parse response JSON block', e);
         }
+      } else {
+        assistantText = assistantText.replace(/```json[\s\S]*$/g, '').trim();
       }
 
       // Override to RED if client keywords indicate critical hazard
@@ -357,16 +425,22 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
           `\n🌐 *Official Support Guide:* ${matchedKbSolution.officialSourceUrl || 'https://mosestechfixsolution.com'}`;
       }
 
-      const assistantMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+      const finalAssistantMsg: ChatMessage = {
+        id: assistantMsgId,
         sender: 'assistant',
-        text: assistantText,
+        text: assistantText || 'Diagnosis complete.',
         safetyLevel,
         structuredAction,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
-      setMessages((prev) => [...prev, assistantMsg]);
+      setMessages((prev) => {
+        const exists = prev.some((m) => m.id === assistantMsgId);
+        if (exists) {
+          return prev.map((m) => (m.id === assistantMsgId ? finalAssistantMsg : m));
+        }
+        return [...prev, finalAssistantMsg];
+      });
 
       // If action is BOOK_TECHNICIAN or safetyLevel is RED, prompt booking modal
       if (structuredAction?.actionType === 'BOOK_TECHNICIAN' || safetyLevel === 'Red') {
