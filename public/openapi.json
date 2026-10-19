@@ -1,0 +1,271 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MosesTech Fix AI API",
+    "description": "Official AI Diagnostic & IT Repair Assistant API for MosesTech Fix Solution (Kampala, Uganda). Diagnose PC/laptop/printer faults, generate repair quotes, and log transactions.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://mosestechfixai.mwesigwamoses859.workers.dev",
+      "description": "Production Cloudflare Worker Server"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Check the status of the MosesTech Fix AI service.",
+        "operationId": "checkHealth",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" },
+                    "app": { "type": "string", "example": "MosesTech Fix AI" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/diagnose-chat": {
+      "post": {
+        "summary": "Diagnose Device Fault",
+        "description": "Diagnoses computer, laptop, printer, or network hardware/software issues. Provides 1 safe step-by-step diagnostic instruction or escalates to technician booking if dangerous.",
+        "operationId": "diagnoseDevice",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt"],
+                "properties": {
+                  "prompt": {
+                    "type": "string",
+                    "description": "Description of the hardware/software fault, symptoms, or user's response to previous step.",
+                    "example": "My laptop screen is completely black and won't turn on"
+                  },
+                  "deviceCategory": {
+                    "type": "string",
+                    "description": "Category of device",
+                    "enum": [
+                      "Windows Laptop / PC",
+                      "Printer / Scanner",
+                      "Wi-Fi / Router",
+                      "Android Phone",
+                      "CCTV / Security"
+                    ],
+                    "default": "Windows Laptop / PC"
+                  },
+                  "manufacturer": {
+                    "type": "string",
+                    "description": "Manufacturer / Brand of the device (e.g., HP, Dell, Lenovo, Epson, Canon).",
+                    "example": "HP"
+                  },
+                  "model": {
+                    "type": "string",
+                    "description": "Model name or number",
+                    "example": "ProBook 450 G8"
+                  },
+                  "history": {
+                    "type": "array",
+                    "description": "Previous conversational dialogue history for multi-step diagnosis.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "role": { "type": "string", "enum": ["user", "assistant"] },
+                        "content": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Diagnosis response containing step-by-step guidance and structured action JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "description": "Diagnostic instruction and technician advice."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/assistant": {
+      "post": {
+        "summary": "IT Helpdesk & Business Assistant",
+        "description": "Answers general IT service questions, store hours, Kampala on-site technician bookings, or customer support inquiries.",
+        "operationId": "askAssistant",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt"],
+                "properties": {
+                  "prompt": {
+                    "type": "string",
+                    "description": "Question or query for MosesTech Fix IT support."
+                  },
+                  "history": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "role": { "type": "string", "enum": ["user", "assistant"] },
+                        "content": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Assistant response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "text": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/parse-document": {
+      "post": {
+        "summary": "Generate Quotation or Invoice",
+        "description": "Parses customer repair requirements into a structured quotation or invoice in Ugandan Shillings (UGX).",
+        "operationId": "generateQuotationOrInvoice",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["inputPrompt"],
+                "properties": {
+                  "inputPrompt": {
+                    "type": "string",
+                    "description": "Natural language quotation or invoice request with parts, services, customer name, and prices.",
+                    "example": "Quotation for HP EliteBook keyboard replacement at 150000 UGX and servicing at 30000 UGX for customer Alex"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Structured quotation or invoice document",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "document": {
+                      "type": "object",
+                      "properties": {
+                        "docType": { "type": "string", "example": "quotation" },
+                        "customerName": { "type": "string", "example": "Alex" },
+                        "customerPhone": { "type": "string" },
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "description": { "type": "string" },
+                              "quantity": { "type": "number" },
+                              "unitPriceUGX": { "type": "number" }
+                            }
+                          }
+                        },
+                        "includeVAT": { "type": "boolean" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ai/quick-natural-log": {
+      "post": {
+        "summary": "Quick Log Sale or Expense",
+        "description": "Parses a natural language sentence into a structured sale (income) or expense (outflow) record for the shop.",
+        "operationId": "logSaleOrExpense",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["text"],
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "Natural transaction string",
+                    "example": "Sold Dell laptop charger for 45000 cash to customer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Parsed transaction record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "parsed": {
+                      "type": "object",
+                      "properties": {
+                        "type": { "type": "string", "enum": ["SALE", "EXPENSE"] },
+                        "description": { "type": "string" },
+                        "amountUGX": { "type": "number" },
+                        "paymentMethod": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

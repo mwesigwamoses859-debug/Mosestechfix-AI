@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "MosesTech Fix AI",
+  "name_for_model": "mosestech_fix_ai",
+  "description_for_human": "Diagnose Windows PC, laptop, printer, and Wi-Fi issues in Uganda with step-by-step guidance & technician support.",
+  "description_for_model": "Expert IT hardware diagnostic assistant and local technician helpdesk for Uganda (MosesTech Fix Solution Kampala). Call this tool to diagnose computer/printer hardware faults, generate repair quotations, or log shop transactions.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://mosestechfixai.mwesigwamoses859.workers.dev/openapi.yaml"
+  },
+  "logo_url": "https://mosestechfixai.mwesigwamoses859.workers.dev/favicon.svg",
+  "contact_email": "support@mosestechfixsolution.com",
+  "legal_info_url": "https://mosestechfixai.mwesigwamoses859.workers.dev/privacy.html"
+}

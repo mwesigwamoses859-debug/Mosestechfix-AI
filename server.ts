@@ -15,6 +15,17 @@ const PORT = Number(process.env.PORT || 3000);
 
 app.use(express.json({ limit: '10mb' }));
 
+// Enable CORS for ChatGPT Actions, Plugins, and external integrations
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-admin-secret, Accept, openai-ephemeral-user-id');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 // Lazy init Gemini AI
 function getGenAI() {
   const apiKey = process.env.GEMINI_API_KEY || ((app as any).locals?.runtimeEnv && (app as any).locals.runtimeEnv.GEMINI_API_KEY);
@@ -161,6 +172,263 @@ async function executeGenAI(
 // API Routes
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', app: 'MosesTech Fix AI' });
+});
+
+// ChatGPT Plugin Manifest & OpenAPI Specification Endpoints
+const AI_PLUGIN_MANIFEST = {
+  schema_version: 'v1',
+  name_for_human: 'MosesTech Fix AI',
+  name_for_model: 'mosestech_fix_ai',
+  description_for_human: 'Diagnose Windows PC, laptop, printer, and Wi-Fi issues in Uganda with step-by-step guidance & technician support.',
+  description_for_model: 'Expert IT hardware diagnostic assistant and local technician helpdesk for Uganda (MosesTech Fix Solution Kampala). Call this tool to diagnose computer/printer hardware faults, generate repair quotations, or log shop transactions.',
+  auth: {
+    type: 'none',
+  },
+  api: {
+    type: 'openapi',
+    url: 'https://mosestechfixai.mwesigwamoses859.workers.dev/openapi.yaml',
+  },
+  logo_url: 'https://mosestechfixai.mwesigwamoses859.workers.dev/favicon.svg',
+  contact_email: 'support@mosestechfixsolution.com',
+  legal_info_url: 'https://mosestechfixai.mwesigwamoses859.workers.dev/privacy.html',
+};
+
+const OPENAPI_YAML_CONTENT = `openapi: 3.1.0
+info:
+  title: MosesTech Fix AI API
+  description: Official AI Diagnostic & IT Repair Assistant API for MosesTech Fix Solution (Kampala, Uganda). Diagnose PC/laptop/printer faults, generate repair quotes, and log transactions.
+  version: 1.0.0
+servers:
+  - url: https://mosestechfixai.mwesigwamoses859.workers.dev
+    description: Production Cloudflare Worker Server
+paths:
+  /api/health:
+    get:
+      summary: Health Check
+      description: Check the status of the MosesTech Fix AI service.
+      operationId: checkHealth
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  app:
+                    type: string
+                    example: MosesTech Fix AI
+
+  /api/ai/diagnose-chat:
+    post:
+      summary: Diagnose Device Fault
+      description: Diagnoses computer, laptop, printer, or network hardware/software issues. Provides 1 safe step-by-step diagnostic instruction or escalates to technician booking if dangerous.
+      operationId: diagnoseDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+              properties:
+                prompt:
+                  type: string
+                  description: Description of the hardware/software fault, symptoms, or user's response to previous step.
+                  example: My laptop screen is completely black and won't turn on
+                deviceCategory:
+                  type: string
+                  description: Category of device
+                  enum:
+                    - Windows Laptop / PC
+                    - Printer / Scanner
+                    - Wi-Fi / Router
+                    - Android Phone
+                    - CCTV / Security
+                  default: Windows Laptop / PC
+                manufacturer:
+                  type: string
+                  description: Manufacturer / Brand of the device (e.g., HP, Dell, Lenovo, Epson, Canon).
+                  example: HP
+                model:
+                  type: string
+                  description: Model name or number
+                  example: ProBook 450 G8
+                history:
+                  type: array
+                  description: Previous conversational dialogue history for multi-step diagnosis.
+                  items:
+                    type: object
+                    properties:
+                      role:
+                        type: string
+                        enum:
+                          - user
+                          - assistant
+                      content:
+                        type: string
+      responses:
+        '200':
+          description: Diagnosis response containing step-by-step guidance and structured action JSON.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+                    description: Diagnostic instruction and technician advice.
+
+  /api/ai/assistant:
+    post:
+      summary: IT Helpdesk & Business Assistant
+      description: Answers general IT service questions, store hours, Kampala on-site technician bookings, or customer support inquiries.
+      operationId: askAssistant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+              properties:
+                prompt:
+                  type: string
+                  description: Question or query for MosesTech Fix IT support.
+                history:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      role:
+                        type: string
+                        enum:
+                          - user
+                          - assistant
+                      content:
+                        type: string
+      responses:
+        '200':
+          description: Assistant response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+
+  /api/ai/parse-document:
+    post:
+      summary: Generate Quotation or Invoice
+      description: Parses customer repair requirements into a structured quotation or invoice in Ugandan Shillings (UGX).
+      operationId: generateQuotationOrInvoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - inputPrompt
+              properties:
+                inputPrompt:
+                  type: string
+                  description: Natural language quotation or invoice request with parts, services, customer name, and prices.
+                  example: Quotation for HP EliteBook keyboard replacement at 150000 UGX and servicing at 30000 UGX for customer Alex
+      responses:
+        '200':
+          description: Structured quotation or invoice document
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document:
+                    type: object
+                    properties:
+                      docType:
+                        type: string
+                        example: quotation
+                      customerName:
+                        type: string
+                        example: Alex
+                      customerPhone:
+                        type: string
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            description:
+                              type: string
+                            quantity:
+                              type: number
+                            unitPriceUGX:
+                              type: number
+                      includeVAT:
+                        type: boolean
+
+  /api/ai/quick-natural-log:
+    post:
+      summary: Quick Log Sale or Expense
+      description: Parses a natural language sentence into a structured sale (income) or expense (outflow) record for the shop.
+      operationId: logSaleOrExpense
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                  description: Natural transaction string
+                  example: Sold Dell laptop charger for 45000 cash to customer
+      responses:
+        '200':
+          description: Parsed transaction record
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  parsed:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        enum:
+                          - SALE
+                          - EXPENSE
+                      description:
+                        type: string
+                      amountUGX:
+                        type: number
+                      paymentMethod:
+                        type: string
+`;
+
+app.get('/.well-known/ai-plugin.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.json(AI_PLUGIN_MANIFEST);
+});
+
+app.get('/openapi.yaml', (req, res) => {
+  res.setHeader('Content-Type', 'text/yaml; charset=utf-8');
+  res.send(OPENAPI_YAML_CONTENT);
+});
+
+app.get(['/privacy', '/privacy.html'], (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Privacy Policy - MosesTech Fix AI</title><style>body{font-family:system-ui,-apple-system,sans-serif;line-height:1.6;max-width:750px;margin:40px auto;padding:0 20px;color:#1e293b;background:#f8fafc;}</style></head><body><h1>Privacy Policy — MosesTech Fix AI</h1><p>MosesTech Fix AI (Kampala, Uganda) processes device symptoms and error messages to provide instant hardware diagnostics and repair support. We do not sell or share personal data.</p><p>WhatsApp Support: +256 708 262179 / +256 789 218570 | Website: <a href="https://mosestechfixsolution.com">mosestechfixsolution.com</a></p></body></html>`);
 });
 
 type ManualPlan = { name: string; amountUGX: number; durationDays: number };
