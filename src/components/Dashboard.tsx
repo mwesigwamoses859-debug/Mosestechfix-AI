@@ -6,6 +6,7 @@ import {
   DebtRecord,
   BusinessDocument,
   Product,
+  PaidSubscriber,
 } from '../types';
 import {
   Bot,
@@ -29,8 +30,18 @@ import {
   CheckCircle2,
   Clock,
   Flame,
+  Users,
+  DollarSign,
+  Smartphone,
+  Search,
+  Plus,
+  Copy,
+  Check,
+  Calendar,
+  MessageCircle,
 } from 'lucide-react';
 import { formatUGX } from '../utils/calculator';
+import { getSubscriberStats, addPaidSubscriber } from '../utils/subscriberManager';
 
 interface DashboardProps {
   profile: BusinessProfile;
@@ -39,6 +50,8 @@ interface DashboardProps {
   debts: DebtRecord[];
   documents: BusinessDocument[];
   products: Product[];
+  subscribers?: PaidSubscriber[];
+  setSubscribers?: React.Dispatch<React.SetStateAction<PaidSubscriber[]>>;
   setActiveTab: (tab: string) => void;
   onOpenQuickSale: () => void;
   onOpenQuickQuotation: () => void;
@@ -52,10 +65,92 @@ export const Dashboard: React.FC<DashboardProps> = ({
   debts = [],
   documents = [],
   products = [],
+  subscribers = [],
+  setSubscribers,
   setActiveTab,
   onQuickPromptAI,
 }) => {
   const [quickPromptText, setQuickPromptText] = useState('');
+
+  // Subscriber Management State (Private for Mwesigwa Moses)
+  const [subscriberSearch, setSubscriberSearch] = useState('');
+  const [selectedMethodFilter, setSelectedMethodFilter] = useState<'All' | 'MTN MoMoPay (Merchant 551052)' | 'Airtel Money' | 'Stripe / Card'>('All');
+  const [showAddSubscriberModal, setShowAddSubscriberModal] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  // New Subscriber Form State
+  const [newSubName, setNewSubName] = useState('');
+  const [newSubPhone, setNewSubPhone] = useState('');
+  const [newSubPlan, setNewSubPlan] = useState<'monthly_full' | 'weekly_access' | 'remote_pass' | 'business_it'>('monthly_full');
+  const [newSubMethod, setNewSubMethod] = useState<'MTN MoMoPay (Merchant 551052)' | 'MTN Mobile Money' | 'Airtel Money' | 'Stripe / Card'>('MTN MoMoPay (Merchant 551052)');
+  const [newSubTxRef, setNewSubTxRef] = useState('');
+  const [newSubNotes, setNewSubNotes] = useState('');
+
+  const stats = getSubscriberStats(subscribers);
+
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard?.writeText(code);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const handleAddSubscriberSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSubName.trim() || !newSubPhone.trim() || !newSubTxRef.trim()) {
+      alert('Please fill customer name, phone number, and transaction reference.');
+      return;
+    }
+
+    const planPrices = {
+      weekly_access: { name: 'Weekly Pass (UGX 12,000)', ugx: 12000, usd: 3.5, days: 7 },
+      monthly_full: { name: 'Advanced Pro ($7/mo)', ugx: 26000, usd: 7, days: 30 },
+      remote_pass: { name: 'Remote Tech Pass', ugx: 35000, usd: 10, days: 30 },
+      business_it: { name: 'Small Business IT Care', ugx: 95000, usd: 27, days: 30 },
+    };
+
+    const sel = planPrices[newSubPlan];
+    const expiry = new Date(Date.now() + sel.days * 86_400_000).toISOString().replace('T', ' ').substring(0, 16);
+    const code = `MTF-${newSubPlan.toUpperCase().substring(0, 3)}-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const created = addPaidSubscriber({
+      customerName: newSubName.trim(),
+      customerPhone: newSubPhone.trim(),
+      planId: newSubPlan,
+      planName: sel.name,
+      amountUGX: sel.ugx,
+      amountUSD: sel.usd,
+      paymentMethod: newSubMethod,
+      transactionReference: newSubTxRef.trim(),
+      deviceId: `dev-${newSubPhone.replace(/[^0-9]/g, '').slice(-6)}`,
+      expiresAt: expiry,
+      activationCode: code,
+      notes: newSubNotes.trim() || 'Manual admin registration by Mwesigwa Moses',
+    });
+
+    if (setSubscribers) {
+      setSubscribers((prev) => [created, ...prev]);
+    }
+
+    setNewSubName('');
+    setNewSubPhone('');
+    setNewSubTxRef('');
+    setNewSubNotes('');
+    setShowAddSubscriberModal(false);
+    alert(`Successfully registered ${created.customerName} for ${created.planName}! Activation code: ${code}`);
+  };
+
+  const filteredSubscribers = (subscribers || []).filter((sub) => {
+    const matchesSearch =
+      sub.customerName.toLowerCase().includes(subscriberSearch.toLowerCase()) ||
+      sub.customerPhone.toLowerCase().includes(subscriberSearch.toLowerCase()) ||
+      sub.transactionReference.toLowerCase().includes(subscriberSearch.toLowerCase()) ||
+      sub.planName.toLowerCase().includes(subscriberSearch.toLowerCase());
+    const matchesMethod =
+      selectedMethodFilter === 'All' ||
+      sub.paymentMethod === selectedMethodFilter ||
+      (selectedMethodFilter === 'MTN MoMoPay (Merchant 551052)' && sub.paymentMethod.includes('MTN'));
+    return matchesSearch && matchesMethod;
+  });
 
   const totalSalesUGX = sales.reduce((sum, s) => sum + (s.totalAmountUGX || 0), 0);
   const pendingDocsCount = documents.filter((d) => d.status === 'Pending').length;
@@ -96,7 +191,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
       `• Total Invoices & Quotations: ${documents.length}\n` +
       `• Pending Invoices: ${pendingDocsCount}\n\n` +
       `💳 *SHOP ACCOUNTS:*\n` +
-      `• MTN Mobile Money: 0789218570 (Moses Mwesigwa)\n` +
+      `• MTN Uganda MoMoPay Merchant: 551052 (MosesTech Fix Solution)\n` +
+      `• MTN Mobile Hotline: 0789218570 (Moses Mwesigwa)\n` +
+      `• Airtel Helpline: 0708262179\n` +
       `• dfcu Bank: 01360017235808 (Mwesigwa Moses)\n\n` +
       `Generated by MosesTech Fix AI Executive Dashboard.`;
 
@@ -146,6 +243,357 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <span>mosestechfixsolution.com</span>
             <ExternalLink className="w-3 h-3 text-slate-400" />
           </a>
+        </div>
+      </div>
+
+      {/* 👑 PRIVATE ADMIN: Paid Subscribers & Subscription Revenue Tracker */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5 animate-fade-in">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800/80 pb-4">
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>Paid Subscribers & Subscription Revenue</span>
+                <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full font-mono uppercase">
+                  Private Admin View
+                </span>
+              </h2>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Live breakdown of paid subscribers across MTN MoMo, Airtel Money, and Stripe Card.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowAddSubscriberModal(!showAddSubscriberModal)}
+            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-sm transition-all hover:scale-105 shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>{showAddSubscriberModal ? 'Close Form' : '+ Record Paid Customer'}</span>
+          </button>
+        </div>
+
+        {/* 4 Revenue & Subscriber KPI Metric Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {/* Card 1: Total Paying Customers */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50/50 dark:from-emerald-950/40 dark:to-teal-950/20 border border-emerald-200/80 dark:border-emerald-800/60 shadow-xs">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">Total Paid Users</span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black shadow-xs">
+                <Users className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">
+              {stats.totalCount}
+            </div>
+            <div className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1 flex items-center gap-1 font-semibold">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>{stats.activeCount} Active • {stats.expiringCount} Expiring Soon</span>
+            </div>
+          </div>
+
+          {/* Card 2: Total Revenue Collected */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50/50 dark:from-blue-950/40 dark:to-indigo-950/20 border border-blue-200/80 dark:border-blue-800/60 shadow-xs">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-blue-800 dark:text-blue-300">Total Subscription Revenue</span>
+              <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black shadow-xs">
+                <DollarSign className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono truncate">
+              {formatUGX(stats.totalRevenueUGX)}
+            </div>
+            <div className="text-[11px] text-blue-700 dark:text-blue-400 mt-1 font-semibold">
+              <span>≈ ${stats.totalRevenueUSD} USD total collected</span>
+            </div>
+          </div>
+
+          {/* Card 3: MTN MoMoPay Merchant 551052 */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-yellow-50/50 dark:from-amber-950/40 dark:to-yellow-950/20 border border-amber-200/80 dark:border-amber-800/60 shadow-xs">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-amber-800 dark:text-amber-300">MTN MoMoPay (Merchant 551052)</span>
+              <div className="w-8 h-8 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-xs">
+                <Smartphone className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono">
+              {stats.mtnCount} Paid Users
+            </div>
+            <div className="text-[11px] text-amber-700 dark:text-amber-400 mt-1 font-mono font-bold">
+              <span>{formatUGX(stats.mtnRevenueUGX)}</span>
+            </div>
+          </div>
+
+          {/* Card 4: Airtel & Stripe Card */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-50 to-rose-50/50 dark:from-purple-950/40 dark:to-rose-950/20 border border-purple-200/80 dark:border-purple-800/60 shadow-xs">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-purple-800 dark:text-purple-300">Airtel Money & Card</span>
+              <div className="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-black shadow-xs">
+                <CreditCard className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono">
+              {stats.airtelCount + stats.cardCount} Paid Users
+            </div>
+            <div className="text-[11px] text-purple-700 dark:text-purple-400 mt-1 font-semibold">
+              <span>{stats.airtelCount} Airtel ({formatUGX(stats.airtelRevenueUGX)}) • {stats.cardCount} Stripe (${stats.cardRevenueUSD})</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Collapsible Manual Activation / Registration Panel */}
+        {showAddSubscriberModal && (
+          <form
+            onSubmit={handleAddSubscriberSubmit}
+            className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-emerald-500/40 space-y-4 animate-fade-in"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                  + Activate Customer (Mobile Money or Cash)
+                </h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Enter payer details to record revenue and generate an instant device activation code.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddSubscriberModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs"
+              >
+                Cancel ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Customer Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Ronald Ssebaggala"
+                  value={newSubName}
+                  onChange={(e) => setNewSubName(e.target.value)}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Customer Phone Number *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. +256 789 218570"
+                  value={newSubPhone}
+                  onChange={(e) => setNewSubPhone(e.target.value)}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Plan Subscribed *</label>
+                <select
+                  value={newSubPlan}
+                  onChange={(e) => setNewSubPlan(e.target.value as any)}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 font-medium"
+                >
+                  <option value="weekly_access">Weekly Pass — UGX 12,000 ($3.50)</option>
+                  <option value="monthly_full">Advanced Pro (30 Days) — UGX 26,000 ($7.00)</option>
+                  <option value="remote_pass">Remote Tech Pass — UGX 35,000 ($10.00)</option>
+                  <option value="business_it">Small Business IT Care — UGX 95,000 ($27.00)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Payment Channel *</label>
+                <select
+                  value={newSubMethod}
+                  onChange={(e) => setNewSubMethod(e.target.value as any)}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 font-medium"
+                >
+                  <option value="MTN MoMoPay (Merchant 551052)">MTN MoMoPay (Merchant Code: 551052)</option>
+                  <option value="MTN Mobile Money">MTN Direct Line (0789218570)</option>
+                  <option value="Airtel Money">Airtel Money (0708262179)</option>
+                  <option value="Stripe / Card">Stripe / Online Card</option>
+                  <option value="Cash / Direct">Cash / Direct Shop Payment</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Transaction Ref / MoMo ID *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. MTN-MM-449102"
+                  value={newSubTxRef}
+                  onChange={(e) => setNewSubTxRef(e.target.value)}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">Admin Notes (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. WhatsApp verification completed"
+                  value={newSubNotes}
+                  onChange={(e) => setNewSubNotes(e.target.value)}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 font-medium"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="submit"
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl text-xs flex items-center space-x-1.5 shadow-md transition-all"
+              >
+                <Check className="w-4 h-4" />
+                <span>Save Payment & Activate Subscriber</span>
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* Search & Channel Filter Controls */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-1">
+          <div className="relative flex-1 max-w-md">
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search paid customers by name, phone, or transaction ID..."
+              value={subscriberSearch}
+              onChange={(e) => setSubscriberSearch(e.target.value)}
+              className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-slate-100"
+            />
+          </div>
+
+          <div className="flex items-center space-x-1 overflow-x-auto pb-1 sm:pb-0 text-xs">
+            {(['All', 'MTN MoMoPay (Merchant 551052)', 'Airtel Money', 'Stripe / Card'] as const).map((method) => (
+              <button
+                key={method}
+                type="button"
+                onClick={() => setSelectedMethodFilter(method)}
+                className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-colors ${
+                  selectedMethodFilter === method
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                {method === 'All' ? `All (${(subscribers || []).length})` : method}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Paid Subscribers Ledger Table */}
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="bg-slate-50 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800">
+                <th className="py-3 px-3.5">Customer / Contact</th>
+                <th className="py-3 px-3">Plan / Tier</th>
+                <th className="py-3 px-3">Amount Paid</th>
+                <th className="py-3 px-3">Payment Channel</th>
+                <th className="py-3 px-3">Tx Reference</th>
+                <th className="py-3 px-3">Expiry Date</th>
+                <th className="py-3 px-3">Status</th>
+                <th className="py-3 px-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+              {filteredSubscribers.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-8 text-center text-slate-400">
+                    No paid subscribers found matching your search.
+                  </td>
+                </tr>
+              ) : (
+                filteredSubscribers.map((sub) => (
+                  <tr key={sub.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                    <td className="py-3 px-3.5">
+                      <p className="font-bold text-slate-900 dark:text-white">{sub.customerName}</p>
+                      <p className="text-[11px] text-slate-400 font-mono">{sub.customerPhone}</p>
+                    </td>
+
+                    <td className="py-3 px-3">
+                      <span className="font-bold text-slate-800 dark:text-slate-200 block">{sub.planName}</span>
+                      <span className="text-[10px] text-slate-400">{sub.subscribedAt}</span>
+                    </td>
+
+                    <td className="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      {formatUGX(sub.amountUGX)}
+                      {sub.amountUSD && <span className="block text-[10px] text-slate-400">(${sub.amountUSD} USD)</span>}
+                    </td>
+
+                    <td className="py-3 px-3">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        sub.paymentMethod === 'MTN Mobile Money'
+                          ? 'bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-600'
+                          : sub.paymentMethod === 'Airtel Money'
+                          ? 'bg-red-100 dark:bg-red-950/70 text-red-800 dark:text-red-300 border border-red-300 dark:border-red-600'
+                          : 'bg-purple-100 dark:bg-purple-950/70 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-600'
+                      }`}>
+                        {sub.paymentMethod}
+                      </span>
+                    </td>
+
+                    <td className="py-3 px-3 font-mono text-[11px] text-slate-600 dark:text-slate-300">
+                      {sub.transactionReference}
+                    </td>
+
+                    <td className="py-3 px-3 font-mono text-[11px] text-slate-600 dark:text-slate-300">
+                      {sub.expiresAt}
+                    </td>
+
+                    <td className="py-3 px-3">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                        sub.status === 'Active'
+                          ? 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300'
+                          : sub.status === 'Expiring Soon'
+                          ? 'bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 animate-pulse'
+                          : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
+                      }`}>
+                        {sub.status}
+                      </span>
+                    </td>
+
+                    <td className="py-3 px-3 text-right">
+                      <div className="flex items-center justify-end space-x-1.5">
+                        {sub.activationCode && (
+                          <button
+                            type="button"
+                            onClick={() => handleCopyCode(sub.activationCode!)}
+                            className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
+                            title="Copy customer activation code"
+                          >
+                            {copiedCode === sub.activationCode ? (
+                              <Check className="w-3.5 h-3.5 text-emerald-500" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        )}
+
+                        <a
+                          href={`https://wa.me/${sub.customerPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                            `Hello ${sub.customerName}, your MosesTech Fix AI subscription (${sub.planName}) is active. If you need any computer troubleshooting assistance, you can access unlimited diagnostics at https://mosestechfixai.mwesigwamoses859.workers.dev. Thank you for choosing MosesTech!`
+                          )}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-600 dark:text-emerald-400"
+                          title="Message customer on WhatsApp"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 

@@ -44,6 +44,10 @@ import {
   ChevronUp,
   Zap,
   Share2,
+  PanelLeftClose,
+  PanelLeftOpen,
+  MessageSquare,
+  History,
 } from 'lucide-react';
 
 interface FixAITroubleshooterProps {
@@ -128,6 +132,7 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [uploadedImageBase64, setUploadedImageBase64] = useState<string | null>(null);
   const [showHardwarePanel, setShowHardwarePanel] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isOffline, setIsOffline] = useState(typeof window !== 'undefined' ? !navigator.onLine : false);
 
   useEffect(() => {
@@ -299,6 +304,7 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
       let structuredAction: any = null;
       let safetyLevel: SafetyLevel = detectedSafety;
       const assistantMsgId = (Date.now() + 1).toString();
+      let res: Response;
 
       if (currentImage) {
         res = await fetch('/api/ai/diagnose-image', {
@@ -574,30 +580,148 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
   ];
 
   return (
-    <div className="max-w-4xl mx-auto flex flex-col h-[calc(100vh-8.5rem)] min-h-[580px] text-slate-900 dark:text-slate-100">
-      
-      {/* ChatGPT-Style Top Header Bar */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-t-2xl shrink-0">
-        
-        {/* Model Selector / Target Device Pill */}
-        <div className="flex items-center space-x-2">
-          <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="text-slate-800 dark:text-slate-200 font-mono">MosesTech Fix AI 2.0</span>
+    <div className="max-w-6xl mx-auto flex h-[calc(100vh-8.5rem)] min-h-[580px] text-slate-900 dark:text-slate-100 gap-3">
+      {/* Collapsible Left Sidebar (ChatGPT & Copilot Layout) */}
+      {isSidebarOpen && (
+        <aside className="w-64 sm:w-72 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col p-3 space-y-3 shrink-0 shadow-sm animate-fade-in backdrop-blur-md">
+          {/* Sidebar Top: New Diagnostic Chat & Close Button */}
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center space-x-2">
+              <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold">
+                <Wrench className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-xs font-extrabold text-slate-900 dark:text-white">Diagnostic Hub</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsSidebarOpen(false)}
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+              title="Collapse sidebar"
+            >
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
           </div>
 
+          {/* New Chat Primary Button */}
           <button
             type="button"
-            onClick={() => setShowHardwarePanel(!showHardwarePanel)}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors"
-            title="Configure target device"
+            onClick={handleNewChat}
+            className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-2 shadow-xs transition-all hover:scale-[1.02]"
           >
-            <span className="font-semibold truncate max-w-[120px] sm:max-w-xs">
-              🎯 {selectedDevice} ({selectedBrand})
-            </span>
-            {showHardwarePanel ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            <PlusCircle className="w-4 h-4" />
+            <span>New Diagnostic Chat</span>
           </button>
-        </div>
+
+          {/* Quick Hardware Switcher */}
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1">
+              Select Device
+            </span>
+            <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+              {HARDWARE_CATEGORIES.slice(0, 4).map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedDevice(cat.id)}
+                  className={`p-2 rounded-xl text-left border flex items-center space-x-1.5 transition-colors ${
+                    selectedDevice === cat.id
+                      ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-800 dark:text-emerald-300 font-bold'
+                      : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <cat.icon className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">{cat.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Diagnostic History & Common Presets */}
+          <div className="flex-1 overflow-y-auto space-y-1.5 pr-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1">
+              Quick Diagnostic Presets
+            </span>
+            <div className="space-y-1">
+              {CHATGPT_SUGGESTIONS.map((preset, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    setSelectedDevice(preset.category as DeviceCategory);
+                    setSelectedBrand(preset.brand as Manufacturer);
+                    handleSend(preset.prompt);
+                    if (typeof window !== 'undefined' && window.innerWidth < 640) setIsSidebarOpen(false);
+                  }}
+                  className="w-full text-left p-2 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-800 text-[11px] transition-colors group flex items-start space-x-2"
+                >
+                  <MessageSquare className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-500 shrink-0 mt-0.5" />
+                  <span className="text-slate-700 dark:text-slate-300 group-hover:text-emerald-500 font-medium truncate">
+                    {preset.title}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Sidebar Footer: Token / Pro Status */}
+          {(() => {
+            const access = getAccessStatus();
+            return (
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-[11px] space-y-1">
+                <div className="flex items-center justify-between font-bold">
+                  <span className="text-slate-700 dark:text-slate-300">Diagnostic Pass</span>
+                  <span className={access.isPaid ? 'text-emerald-500' : 'text-amber-500 font-mono'}>
+                    {access.isPaid ? 'PRO Active' : `${access.tokensRemaining} Tokens`}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={onOpenSubscriptionModal}
+                  className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold hover:underline block"
+                >
+                  {access.isPaid ? 'Manage Pro Tier →' : 'Upgrade to Pro ($7/mo) →'}
+                </button>
+              </div>
+            );
+          })()}
+        </aside>
+      )}
+
+      {/* Main Chat Canvas Area */}
+      <div className="flex-1 flex flex-col bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm backdrop-blur-md">
+        {/* ChatGPT-Style Top Header Bar */}
+        <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shrink-0">
+          
+          {/* Sidebar Toggle & Target Device Pill */}
+          <div className="flex items-center space-x-2">
+            {!isSidebarOpen && (
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen(true)}
+                className="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors shadow-2xs"
+                title="Open diagnostic sidebar"
+              >
+                <PanelLeftOpen className="w-4 h-4" />
+              </button>
+            )}
+
+            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+              <span className="text-slate-800 dark:text-slate-200 font-mono">MosesTech Fix AI 2.0</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowHardwarePanel(!showHardwarePanel)}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors"
+              title="Configure target device"
+            >
+              <span className="font-semibold truncate max-w-[120px] sm:max-w-xs">
+                🎯 {selectedDevice} ({selectedBrand})
+              </span>
+              {showHardwarePanel ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+          </div>
 
         {/* Action Controls: New Chat, Safety Level & Hotline */}
         <div className="flex items-center space-x-2">
@@ -1055,6 +1179,7 @@ export const FixAITroubleshooter: React.FC<FixAITroubleshooterProps> = ({
         <p className="text-[10px] text-center text-slate-400 dark:text-slate-500 mt-2 font-medium">
           MosesTech Fix AI guided diagnostics • Always disconnect power before touching internal hardware.
         </p>
+      </div>
       </div>
 
       {/* Technician Booking Modal */}

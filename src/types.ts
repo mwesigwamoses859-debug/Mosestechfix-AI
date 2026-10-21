@@ -105,6 +105,7 @@ export interface BusinessProfile {
   bankName?: string;
   bankAccountName?: string;
   bankAccountNumber?: string;
+  mtnMerchantCode?: string; // MTN Uganda MoMoPay Merchant 551052
 }
 
 export interface Customer {
@@ -266,6 +267,24 @@ export interface SubscriptionPlan {
   features: string[];
   isPopular?: boolean;
   badge?: string;
+}
+
+export interface PaidSubscriber {
+  id: string;
+  customerName: string;
+  customerPhone: string;
+  planId: string;
+  planName: string;
+  amountUGX: number;
+  amountUSD?: number;
+  paymentMethod: 'MTN MoMoPay (Merchant 551052)' | 'MTN Mobile Money' | 'Airtel Money' | 'Stripe / Card' | 'Cash / Direct';
+  transactionReference: string;
+  deviceId?: string;
+  status: 'Active' | 'Expiring Soon' | 'Expired';
+  subscribedAt: string;
+  expiresAt: string;
+  activationCode?: string;
+  notes?: string;
 }
 
 

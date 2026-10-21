@@ -29,6 +29,7 @@ export const INITIAL_BUSINESS_PROFILE: BusinessProfile = {
   bankName: 'dfcu Bank Uganda',
   bankAccountName: 'Mwesigwa Moses',
   bankAccountNumber: '01360017235808',
+  mtnMerchantCode: '551052', // MTN Uganda MoMoPay Merchant
 };
 
 export const INITIAL_CASE_TICKETS: CaseTicket[] = [

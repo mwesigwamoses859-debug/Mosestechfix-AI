@@ -13,6 +13,7 @@ interface SubscriptionModalProps {
 
 type PaymentForm = { customerName: string; customerPhone: string; transactionReference: string };
 
+const MTN_MERCHANT_CODE = '551052'; // MTN Uganda MoMoPay Merchant Code
 const PRIMARY_MTN_NUMBER = '0789218570';
 const AIRTEL_NUMBER = '0708262179';
 const WHATSAPP_NUMBER = '256789218570'; // Primary WhatsApp & MTN
@@ -96,6 +97,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, on
       `Phone: ${payment.customerPhone.trim()}`,
       `Plan: ${selectedPlan.name}`,
       `Amount: UGX ${selectedPlan.monthlyUGX.toLocaleString()}`,
+      `Payment Channel: MTN Uganda MoMoPay (Merchant 551052)`,
       `Transaction reference: ${payment.transactionReference.trim()}`,
       `Device code: ${deviceId}`,
       '',
@@ -186,7 +188,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, on
             }`}
           >
             <Smartphone className="w-4 h-4" />
-            <span>MTN Money (0789218570)</span>
+            <span>MTN MoMoPay (Merchant 551052)</span>
             <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-extrabold">Uganda</span>
           </button>
           <button
@@ -316,25 +318,77 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, on
                   <p className="text-xs text-emerald-400 font-bold">SELECTED PLAN</p>
                   <h3 className="font-bold">{selectedPlan.name} — {formatUGX(selectedPlan.monthlyUGX)}</h3>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="bg-slate-900 border-2 border-amber-500/80 rounded-xl p-3.5 relative overflow-hidden">
-                    <div className="absolute top-2 right-2 text-[9px] font-black uppercase tracking-wider bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full">
-                      Primary Payment Line
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Primary: MTN MoMoPay Merchant 551052 */}
+                  <div className="sm:col-span-2 bg-gradient-to-br from-amber-950/60 to-slate-900 border-2 border-amber-500 rounded-2xl p-4 relative overflow-hidden space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-amber-500 text-slate-950 px-2.5 py-0.5 rounded-full">
+                        Official Payment Channel
+                      </span>
+                      <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/40 px-2 py-0.5 rounded-full">
+                        0% Free Fees (MoMoPay)
+                      </span>
                     </div>
-                    <p className="text-xs font-bold text-amber-400">MTN Mobile Money (Moses Mwesigwa)</p>
-                    <p className="font-mono text-base font-extrabold text-white mt-0.5">{PRIMARY_MTN_NUMBER}</p>
-                    <button onClick={() => copyText(PRIMARY_MTN_NUMBER, 'mtn')} className="text-xs text-emerald-400 flex items-center gap-1.5 mt-2 font-bold hover:underline">
-                      <Copy className="w-3.5 h-3.5" />
-                      {copied === 'mtn' ? 'Copied 0789218570!' : 'Copy MTN Number'}
-                    </button>
+
+                    <div>
+                      <p className="text-xs font-bold text-amber-400">MTN Uganda MoMoPay Merchant Code</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="font-mono text-3xl font-black text-white tracking-widest">{MTN_MERCHANT_CODE}</span>
+                        <button
+                          type="button"
+                          onClick={() => copyText(MTN_MERCHANT_CODE, 'merchant')}
+                          className="px-3 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold rounded-lg flex items-center gap-1.5 transition active:scale-95"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>{copied === 'merchant' ? 'Copied 551052!' : 'Copy Merchant Code'}</span>
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-slate-300 mt-1">
+                        Merchant Name: <strong className="text-white">MosesTech Fix Solution</strong>
+                      </p>
+                    </div>
+
+                    {/* Step by step USSD instructions */}
+                    <div className="p-3 bg-slate-950/80 rounded-xl border border-amber-500/30 text-xs space-y-1.5 text-slate-200">
+                      <p className="font-bold text-amber-300 flex items-center gap-1.5">
+                        <Smartphone className="w-3.5 h-3.5 text-amber-400" />
+                        <span>How to pay via MTN Uganda MoMoPay:</span>
+                      </p>
+                      <ol className="list-decimal list-inside space-y-1 text-[11px] text-slate-300">
+                        <li>Dial <strong className="text-amber-400 font-mono">*165*3#</strong> (Payments / MoMoPay)</li>
+                        <li>Enter Merchant Code: <strong className="text-amber-400 font-mono">551052</strong></li>
+                        <li>Enter Amount: <strong className="text-emerald-400">{formatUGX(selectedPlan.monthlyUGX)}</strong></li>
+                        <li>Enter Reference: Your Name or Phone</li>
+                        <li>Enter your MTN MoMo PIN to approve payment (Free / 0 charge)</li>
+                      </ol>
+                    </div>
                   </div>
-                  <div className="bg-slate-900 border border-red-900/60 rounded-xl p-3.5">
-                    <p className="text-xs font-bold text-red-400">Airtel Money (Secondary Line)</p>
-                    <p className="font-mono text-base font-bold text-slate-200 mt-0.5">{AIRTEL_NUMBER}</p>
-                    <button onClick={() => copyText(AIRTEL_NUMBER, 'airtel')} className="text-xs text-slate-400 hover:text-emerald-400 flex items-center gap-1.5 mt-2">
-                      <Copy className="w-3.5 h-3.5" />
-                      {copied === 'airtel' ? 'Copied' : 'Copy Airtel Number'}
-                    </button>
+
+                  {/* Secondary Direct Support Lines */}
+                  <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between space-y-3">
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Direct Help & Verification</span>
+                      <div className="space-y-2 text-xs">
+                        <div>
+                          <p className="text-[11px] text-amber-400 font-semibold">MTN Helpline / Verification:</p>
+                          <p className="font-mono font-bold text-white text-sm">{PRIMARY_MTN_NUMBER}</p>
+                          <button type="button" onClick={() => copyText(PRIMARY_MTN_NUMBER, 'mtn')} className="text-[10px] text-emerald-400 hover:underline">
+                            {copied === 'mtn' ? 'Copied!' : 'Copy MTN'}
+                          </button>
+                        </div>
+                        <div className="pt-1 border-t border-slate-800">
+                          <p className="text-[11px] text-red-400 font-semibold">Airtel Line:</p>
+                          <p className="font-mono font-bold text-slate-200 text-sm">{AIRTEL_NUMBER}</p>
+                          <button type="button" onClick={() => copyText(AIRTEL_NUMBER, 'airtel')} className="text-[10px] text-slate-400 hover:text-emerald-400">
+                            {copied === 'airtel' ? 'Copied!' : 'Copy Airtel'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] text-slate-400">
+                      After paying Merchant <strong>551052</strong>, copy the Transaction ID from the MTN SMS and submit below.
+                    </p>
                   </div>
                 </div>
                 <p className="text-xs text-slate-300 flex items-center gap-2">

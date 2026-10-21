@@ -17,7 +17,9 @@ import {
   CaseTicket,
   DeviceCategory,
   Manufacturer,
+  PaidSubscriber,
 } from './types';
+import { getPaidSubscribers, savePaidSubscribers } from './utils/subscriberManager';
 import {
   INITIAL_BUSINESS_PROFILE,
   INITIAL_CUSTOMERS,
@@ -155,6 +157,11 @@ export default function App() {
     return saved ? JSON.parse(saved) : INITIAL_DEBTS;
   });
 
+  // Paid Subscribers & Revenue State
+  const [subscribers, setSubscribers] = useState<PaidSubscriber[]>(() => {
+    return getPaidSubscribers();
+  });
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
@@ -197,6 +204,45 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('m_biz_debts', JSON.stringify(debts));
   }, [debts]);
+
+  useEffect(() => {
+    savePaidSubscribers(subscribers);
+  }, [subscribers]);
+
+  // Secret Admin Activation Listeners (Hash / Query / Keyboard Shortcut Ctrl+Alt+A)
+  useEffect(() => {
+    const checkSecretUrl = () => {
+      if (typeof window === 'undefined') return;
+      const hash = window.location.hash.toLowerCase();
+      const params = new URLSearchParams(window.location.search);
+      if (
+        hash === '#admin' ||
+        hash === '#mosestech' ||
+        hash === '#dashboard' ||
+        params.get('admin') === 'login' ||
+        params.get('secret') === 'mosestech'
+      ) {
+        setIsAdminModalOpen(true);
+      }
+    };
+
+    checkSecretUrl();
+    window.addEventListener('hashchange', checkSecretUrl);
+
+    // Keyboard shortcut: Ctrl + Alt + A (or Cmd + Option + A on Mac)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.altKey && (e.key === 'a' || e.key === 'A')) {
+        e.preventDefault();
+        setIsAdminModalOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('hashchange', checkSecretUrl);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   // Handle URL Document Shared View (?doc=DOC_ID)
   useEffect(() => {
@@ -328,6 +374,7 @@ export default function App() {
         onLogoutAdmin={handleAdminLogout}
         onOpenTicketTracker={() => setIsTicketTrackerOpen(true)}
         onOpenAppDownload={() => setIsAppDownloadOpen(true)}
+        onOpenPromoteModal={() => setIsPromoteModalOpen(true)}
       />
 
       {/* Main App Canvas */}
@@ -364,6 +411,8 @@ export default function App() {
                 debts={debts}
                 documents={documents}
                 products={products}
+                subscribers={subscribers}
+                setSubscribers={setSubscribers}
                 setActiveTab={handleTabChange}
                 onOpenQuickSale={() => handleTabChange('sales')}
                 onOpenQuickQuotation={() => handleTabChange('documents')}
@@ -424,6 +473,7 @@ export default function App() {
         onLogoutAdmin={handleAdminLogout}
         onOpenTicketTracker={() => setIsTicketTrackerOpen(true)}
         onOpenAppDownload={() => setIsAppDownloadOpen(true)}
+        onOpenPromoteModal={() => setIsPromoteModalOpen(true)}
       />
 
       {/* Admin Authentication Passcode Modal */}
@@ -470,6 +520,11 @@ export default function App() {
       <WebsiteEmbedModal
         isOpen={isEmbedModalOpen}
         onClose={() => setIsEmbedModalOpen(false)}
+      />
+
+      <PromoteShareModal
+        isOpen={isPromoteModalOpen}
+        onClose={() => setIsPromoteModalOpen(false)}
       />
 
       {/* Shared Online Document View Modal */}

@@ -208,21 +208,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   </button>
                 </div>
               </div>
-            ) : (
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    if (onOpenAdminModal) onOpenAdminModal();
-                  }}
-                  className="w-full p-3 rounded-2xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-bold flex items-center justify-center space-x-2 border border-slate-200 dark:border-slate-700"
-                >
-                  <Shield className="w-4 h-4 text-emerald-500" />
-                  <span>Admin Login (Mwesigwa Moses)</span>
-                </button>
-              </div>
-            )}
+            ) : null}
 
             <a
               href="https://mosestechfixsolution.com"
